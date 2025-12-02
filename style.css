@@ -1,0 +1,48 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 body \{\
+    font-family: "Helvetica Neue", Arial, sans-serif;\
+    margin: 0;\
+    padding: 0;\
+    background: #f3f2f1;\
+    color: #0b0c0c;\
+\}\
+\
+.header \{\
+    background: #1d70b8;\
+    padding: 30px;\
+    color: white;\
+    text-align: center;\
+\}\
+\
+.subtitle \{\
+    font-size: 1.1rem;\
+    margin-top: 5px;\
+    opacity: 0.9;\
+\}\
+\
+main \{\
+    max-width: 900px;\
+    margin: 40px auto;\
+    padding: 0 20px;\
+\}\
+\
+.result \{\
+    background: white;\
+    padding: 25px;\
+    border-left: 8px solid #1d70b8;\
+    margin-top: 35px;\
+\}\
+\
+.hidden \{\
+    display: none;\
+\}\
+\
+#result h3 \{\
+    margin-top: 0;\
+\}}
