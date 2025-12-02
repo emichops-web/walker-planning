@@ -1,31 +1,30 @@
-// Listen for Tally submission events
-window.addEventListener("message", async (event) => {
-  if (!event.data?.includes("Tally.FormSubmission")) return;
+// Listen for messages coming from the Tally iframe
+window.addEventListener("message", async function(event) {
+    if (event.data?.event !== "tally:form-submitted") return;
 
-  const parsed = JSON.parse(event.data);
-  const answers = parsed.answers;
+    console.log("Tally form submitted!", event.data);
 
-  // Map the Tally fields into simple variables
-  const fields = {
-    address: answers["What is the address?"] || "",
-    propertyType: answers["Property Type"] || "",
-    extensionType: answers["Extension type"] || "",
-    depth: answers["Depth (metres)"] || "",
-    height: answers["Height (metres)"] || "",
-    constraints: answers["Constraints"] || ""
-  };
+    // Show result section
+    const resultSection = document.getElementById("result-section");
+    const resultBox = document.getElementById("result");
+    resultSection.classList.remove("hidden");
+    resultBox.innerText = "Processing…";
 
-  // Show result box
-  document.getElementById("result-section").classList.remove("hidden");
-  document.getElementById("result").innerHTML = "Processing…";
+    // Extract the answers from Tally payload
+    const answers = event.data.payload?.answers || {};
 
-  // Send data to Netlify AI function
-  const response = await fetch("/.netlify/functions/analyse", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ fields })
-  });
+    try {
+        const response = await fetch("/.netlify/functions/analyse", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(answers)
+        });
 
-  const data = await response.json();
-  document.getElementById("result").innerHTML = data.result;
+        const data = await response.json();
+        resultBox.innerHTML = data.result || "No analysis returned.";
+    } 
+    catch (error) {
+        console.error("Error:", error);
+        resultBox.innerText = "Error generating analysis.";
+    }
 });
