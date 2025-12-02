@@ -1,59 +1,55 @@
 import OpenAI from "openai";
 
-export default async function handler(req, res) {
-  try {
-    // 1️⃣ Parse Tally submission data from the browser
-    const body = req.body ? JSON.parse(req.body) : {};
-    const fields = body.fields || {};
+export default async (req, context) => {
+    try {
+        const body = await req.json();
+        
+        const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const {
-      address = "",
-      propertyType = "",
-      extensionType = "",
-      depth = "",
-      height = "",
-      constraints = ""
-    } = fields;
+        // Build a readable input summary from Tally answers
+        const summary = `
+Address: ${body["What is the address?"] || ""}
+Property type: ${body["Property Type"] || ""}
+Extension type: ${body["Extension type"] || ""}
+Depth: ${body["Depth (metres)"] || ""}
+Height: ${body["Height (metres)"] || ""}
+Constraints: ${body["Constraints"] || ""}
+        `;
 
-    // 2️⃣ Create GPT client
-    const client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
-
-    // 3️⃣ Ask GPT for a proper planning assessment
-    const prompt = `
+        const prompt = `
 You are a UK residential planning expert.
-Analyse whether the following home extension is likely to qualify as Permitted Development.
+Analyse home extensions using simplified Permitted Development rules.
 
-Address: ${address}
-Property type: ${propertyType}
-Extension type: ${extensionType}
-Depth: ${depth}m
-Height: ${height}m
-Constraints: ${constraints}
+User Input:
+${summary}
 
 Your response must include:
 1. Verdict: “Likely Permitted Development” or “Likely Requires Planning Permission”
-2. Key reasoning
+2. Key reasons
 3. Risks or caveats
 4. Simple explanation for homeowners
-5. A short CTA
-`;
+5. CTA: “For a full automated PDF planning report, click here.”
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are a UK planning expert."},
-        { role: "user", content: prompt }
-      ]
-    });
+Format in clean Markdown.
+        `;
 
-    const result = completion.choices[0].message.content;
+        const completion = await client.responses.create({
+            model: "gpt-4.1-mini",
+            input: prompt
+        });
 
-    // 4️⃣ Return result to browser
-    return res.status(200).json({ result });
+        return {
+            statusCode: 200,
+            body: JSON.stringify({
+                result: completion.output_text
+            })
+        };
 
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-}
+    } catch (error) {
+        console.error("Function error:", error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: error.message })
+        };
+    }
+};
