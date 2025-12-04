@@ -1,16 +1,27 @@
 const form = document.getElementById("planningForm");
 const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
+const spinner = document.getElementById("loadingSpinner");
+const submitBtn = document.querySelector(".submit-btn");
 
-// Your Worker URL
+// Your Worker API URL
 const WORKER_URL = "https://walker-planning-worker.emichops.workers.dev/";
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  // Show results panel + loading message
   resultCard.classList.remove("hidden");
   resultContent.innerHTML = "Analysing…";
 
+  // Activate spinner
+  spinner.classList.remove("hidden");
+
+  // Disable button + change text
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Checking...";
+
+  // Collect form data
   const payload = {
     postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value,
@@ -31,17 +42,24 @@ form.addEventListener("submit", async (e) => {
 
     if (data.error) {
       resultContent.innerHTML = `<p style="color:red;">${data.error}</p>`;
-      return;
-    }
+    } else {
+      // Render structured AI result
+      resultContent.innerHTML = `
+        ${data.conclusion_html}
+        ${data.summary_html}
+        ${data.details_html}
+      `;
 
-    // Render structured AI result
-    resultContent.innerHTML = `
-      ${data.conclusion_html}
-      ${data.summary_html}
-      ${data.details_html}
-    `;
+      // Smooth scroll to results
+      resultCard.scrollIntoView({ behavior: "smooth" });
+    }
 
   } catch (err) {
     resultContent.innerHTML = `<p style="color:red;">Unexpected error: ${err.message}</p>`;
   }
+
+  // Always hide spinner + re-enable button after response
+  spinner.classList.add("hidden");
+  submitBtn.disabled = false;
+  submitBtn.innerText = "Run Feasibility Check";
 });
