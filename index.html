@@ -5,32 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Walker Planning – Permitted Development Checker</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Schema.org structured data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Walker Planning – Permitted Development Checker",
-    "description": "Instant AI-powered assessment of UK permitted development rules for home extensions.",
-    "url": "https://walker-planning.pages.dev",
-    "publisher": { "@type": "Organization", "name": "Walker Planning" },
-    "applicationCategory": "RealEstateApplication",
-    "operatingSystem": "All"
-  }
-  </script>
 </head>
 
 <body>
 
-<!-- Sticky Header -->
+<!-- Header -->
 <header class="top-header">
   <img src="logo.png" alt="Walker Planning Logo" class="header-logo">
 </header>
 
-<!-- Hero Image -->
+<!-- Hero -->
 <section class="hero">
-  <img src="hero.png" class="hero-img" alt="House extension">
+  <img src="hero.png" alt="Home extension" class="hero-img">
   <h1 class="hero-title">Instant Permitted Development Check (AI-powered)</h1>
 </section>
 
@@ -40,10 +26,10 @@
 
     <h2>Property Details</h2>
 
-    <label>Postcode *</label>
-    <input id="postcode" type="text" required />
+    <label for="postcode">Postcode *</label>
+    <input id="postcode" type="text" required placeholder="e.g., PH7 4BL">
 
-    <label>Property Type *</label>
+    <label for="propertyType">Property Type *</label>
     <select id="propertyType" required>
       <option>Detached</option>
       <option>Semi-detached</option>
@@ -54,7 +40,7 @@
 
     <h2>Project Type</h2>
 
-    <label>Select your project *</label>
+    <label for="projectType">Project *</label>
     <select id="projectType" required>
       <option>Rear extension</option>
       <option>Side extension</option>
@@ -64,28 +50,16 @@
       <option>Roof lights</option>
       <option>Single-storey outbuilding</option>
       <option>Two-storey extension</option>
-      <option>Garage conversion</option>
-      <option>Replacement windows</option>
-      <option>Chimney or flue</option>
-      <option>Solar panels</option>
-      <option>Air-source heat pump</option>
-      <option>Boundary fence / wall</option>
     </select>
 
     <h2>Dimensions</h2>
 
-    <label>Projection (m) *</label>
-    <input id="dimensionA" type="number" step="0.1" min="0.1" required />
-
-    <label>Height (m) *</label>
-    <input id="dimensionB" type="number" step="0.1" min="0.1" required />
-
-    <label>Distance to nearest boundary (m) *</label>
-    <input id="boundaryDistance" type="number" step="0.1" min="0" required />
+    <!-- Dynamic fields inserted here -->
+    <div id="dimensionFields" class="dimension-fields"></div>
 
     <h2>Site Constraints</h2>
 
-    <label>Constraints *</label>
+    <label for="constraints">Constraints *</label>
     <select id="constraints">
       <option>None</option>
       <option>Conservation area</option>
@@ -98,14 +72,14 @@
   </form>
 </div>
 
-<!-- RESULTS CARD -->
+<!-- RESULTS -->
 <div id="resultCard" class="result-card hidden">
   <h2>Your Planning Feasibility Result</h2>
-  <div id="resultContent">Analysing…</div>
+  <div id="resultContent"></div>
+
   <p class="disclaimer">
-    <strong>Disclaimer:</strong> This tool provides an automated general overview. 
-    Planning rules vary locally — always confirm with your local planning authority 
-    or a qualified planning consultant before starting work.
+    <strong>Disclaimer:</strong> This tool provides an automated overview. Planning rules vary locally —
+    always confirm with your local planning authority or a qualified planning consultant.
   </p>
 </div>
 
