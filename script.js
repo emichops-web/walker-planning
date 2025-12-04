@@ -189,6 +189,9 @@ spinner.innerHTML = `
     ----------------------------------------------------- */
     resultContent.innerHTML = `
       <div class="fade-in">
+      <div class="la-label">
+        ${data.localAuthority ? `${data.localAuthority}` : ""}
+      </div>
         ${data.conclusion_html || ""}
         ${data.summary_html || ""}
         ${data.details_html || ""}
