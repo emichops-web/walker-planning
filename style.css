@@ -133,8 +133,8 @@ textarea {
    RESULT CARD — FIXED WIDTH + CLEAN LOOK
 ========================================================= */
 .result-card {
-  max-width: 800px;        /* Match form width */
-  margin: 40px auto;        /* Center it */
+  max-width: 800px; 
+  margin: 40px auto;
   padding: 40px;
   background: #ffffff;
   border-radius: 16px;
@@ -179,7 +179,7 @@ textarea {
 }
 
 /* =========================================================
-   🔵 3-DOT LOADER — FIXED (HORIZONTAL + SMOOTH)
+   🔵 3-DOT LOADER — FIXED
 ========================================================= */
 #spinner {
   margin: 20px 0;
@@ -219,6 +219,32 @@ textarea {
     transform: translateY(-8px);
     opacity: 1;
   }
+}
+
+/* =========================================================
+   ⭐ NEW: CONFIDENCE SCORE + RISK FACTORS
+========================================================= */
+
+.confidence-score {
+  margin: 18px 0 10px;
+  padding: 12px 16px;
+  background: #eef5ff;
+  border-left: 5px solid #244a9a;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1d3e82;
+}
+
+.risk-factor {
+  margin-top: 10px;
+  padding: 10px 16px;
+  background: #fff7e0;
+  border-left: 5px solid #c7a300;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #6f5200;
+  line-height: 1.45;
 }
 
 /* =========================================================
