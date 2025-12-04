@@ -110,11 +110,11 @@ form.addEventListener("submit", async (e) => {
   resultCard.classList.remove("hidden");
   
   spinner.classList.remove("hidden");
-  spinner.innerHTML = `
-    <div class="dot-loader">
+spinner.innerHTML = `
+  <div class="loader">
       <div></div><div></div><div></div>
-    </div>
-  `;
+  </div>
+`;
 
   // Clear previous results while loading
   resultContent.innerHTML = "";
