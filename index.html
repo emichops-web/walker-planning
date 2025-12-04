@@ -6,7 +6,7 @@
   <title>Walker Planning – Permitted Development Checker</title>
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Schema for SEO -->
+  <!-- Schema.org structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -14,10 +14,8 @@
     "name": "Walker Planning – Permitted Development Checker",
     "description": "Instant AI-powered assessment of UK permitted development rules for home extensions.",
     "url": "https://walker-planning.pages.dev",
-    "publisher": {
-      "@type": "Organization",
-      "name": "Walker Planning"
-    },
+    "publisher": { "@type": "Organization", "name": "Walker Planning" },
+    "applicationCategory": "RealEstateApplication",
     "operatingSystem": "All"
   }
   </script>
@@ -26,117 +24,92 @@
 <body>
 
 <!-- Sticky Header -->
-<header class="site-header">
-  <div class="header-inner">
-    <img src="logo.png" alt="Walker Planning Logo" class="header-logo">
-  </div>
+<header class="top-header">
+  <img src="logo.png" alt="Walker Planning Logo" class="header-logo">
 </header>
 
-<!-- HERO -->
+<!-- Hero Image -->
 <section class="hero">
-  <h1>Instant Permitted Development Check</h1>
-  <p>Fast AI guidance based on UK planning rules</p>
+  <img src="hero.png" class="hero-img" alt="House extension">
+  <h1 class="hero-title">Instant Permitted Development Check (AI-powered)</h1>
 </section>
 
-<form id="planningForm" class="form-card">
+<!-- FORM -->
+<div class="form-wrapper">
+  <form id="planningForm" class="form-card">
 
-  <!-- PROPERTY DETAILS -->
-  <h3>Property Details</h3>
+    <h2>Property Details</h2>
 
-  <div class="two-col">
-    <div>
-      <label>Postcode *</label>
-      <input id="postcode" type="text" placeholder="e.g., PH7 4BL" required>
-    </div>
+    <label>Postcode *</label>
+    <input id="postcode" type="text" required />
 
-    <div>
-      <label>Property Type *</label>
-      <select id="propertyType" required>
-        <option>Detached</option>
-        <option>Semi-detached</option>
-        <option>Terraced</option>
-        <option>Flat</option>
-        <option>Bungalow</option>
-      </select>
-    </div>
-  </div>
+    <label>Property Type *</label>
+    <select id="propertyType" required>
+      <option>Detached</option>
+      <option>Semi-detached</option>
+      <option>Terraced</option>
+      <option>Flat</option>
+      <option>Bungalow</option>
+    </select>
 
-  <!-- PROJECT TYPE -->
-  <h3>Project Type</h3>
+    <h2>Project Type</h2>
 
-  <label>Select your project *</label>
-  <select id="projectType" required>
-    <option value="">Select…</option>
+    <label>Select your project *</label>
+    <select id="projectType" required>
+      <option>Rear extension</option>
+      <option>Side extension</option>
+      <option>Wrap-around extension</option>
+      <option>Porch / front extension</option>
+      <option>Loft dormer extension</option>
+      <option>Roof lights</option>
+      <option>Single-storey outbuilding</option>
+      <option>Two-storey extension</option>
+      <option>Garage conversion</option>
+      <option>Replacement windows</option>
+      <option>Chimney or flue</option>
+      <option>Solar panels</option>
+      <option>Air-source heat pump</option>
+      <option>Boundary fence / wall</option>
+    </select>
 
-    <!-- Extensions -->
-    <option>Rear extension</option>
-    <option>Side extension</option>
-    <option>Wrap-around extension</option>
-    <option>Two-storey extension</option>
-    <option>Porch / front extension</option>
+    <h2>Dimensions</h2>
 
-    <!-- Loft & Roof -->
-    <option>Loft dormer extension</option>
-    <option>Hip-to-gable loft conversion</option>
-    <option>Roof lights / skylights</option>
-    <option>Raising roof height</option>
+    <label>Projection (m) *</label>
+    <input id="dimensionA" type="number" step="0.1" min="0.1" required />
 
-    <!-- Outbuildings -->
-    <option>Garden room</option>
-    <option>Single-storey outbuilding</option>
-    <option>Garage conversion</option>
+    <label>Height (m) *</label>
+    <input id="dimensionB" type="number" step="0.1" min="0.1" required />
 
-    <!-- Alterations -->
-    <option>Windows / larger windows</option>
-    <option>Bi-fold / sliding doors</option>
-    <option>Replace cladding</option>
-    <option>Solar panels (roof)</option>
-    <option>Solar panels (garden)</option>
+    <label>Distance to nearest boundary (m) *</label>
+    <input id="boundaryDistance" type="number" step="0.1" min="0" required />
 
-    <!-- Other -->
-    <option>Air-source heat pump</option>
-    <option>Chimney / flue</option>
-    <option>Fencing / gates</option>
-  </select>
+    <h2>Site Constraints</h2>
 
-  <!-- DIMENSIONS (DYNAMIC) -->
-  <h3>Dimensions</h3>
-  <div id="dimensionFields">
-    <!-- JS will auto-insert the required fields -->
-  </div>
+    <label>Constraints *</label>
+    <select id="constraints">
+      <option>None</option>
+      <option>Conservation area</option>
+      <option>Listed building</option>
+      <option>Article 4</option>
+      <option>Green belt</option>
+    </select>
 
-  <!-- SITE CONSTRAINTS -->
-  <h3>Site Constraints</h3>
-
-  <label>Constraints *</label>
-  <select id="constraints">
-    <option>None</option>
-    <option>Conservation area</option>
-    <option>Listed building</option>
-    <option>Article 4</option>
-    <option>Green belt</option>
-  </select>
-
-  <button type="submit" class="submit-btn">Run Feasibility Check</button>
-</form>
+    <button type="submit" class="submit-btn">Run Feasibility Check</button>
+  </form>
 </div>
 
 <!-- RESULTS CARD -->
 <div id="resultCard" class="result-card hidden">
   <h2>Your Planning Feasibility Result</h2>
-  <div id="spinner" class="spinner hidden"></div>
   <div id="resultContent">Analysing…</div>
-
   <p class="disclaimer">
-    <strong>Disclaimer:</strong> This tool provides an automated general overview.
-    Planning rules vary locally. Always consult your local planning authority or a qualified
-    planning consultant before starting work.
+    <strong>Disclaimer:</strong> This tool provides an automated general overview. 
+    Planning rules vary locally — always confirm with your local planning authority 
+    or a qualified planning consultant before starting work.
   </p>
 </div>
 
-<footer>
-  © Walker Planning · Scotland · 2025
-</footer>
+<footer>© Walker Planning · Scotland · 2025</footer>
 
 <script src="script.js"></script>
 </body>
