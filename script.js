@@ -23,13 +23,11 @@ const dimensionRules = {
     POSTCODE VALIDATION + CLEANING
 ------------------------------- */
 function isValidPostcode(postcode) {
-  // Standard UK postcode regex
   const pattern = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
   return pattern.test(postcode.trim());
 }
 
 function normalisePostcode(postcode) {
-  // Uppercase, remove extra spaces, insert space before last 3 chars
   const pc = postcode.toUpperCase().replace(/\s+/g, "");
   return pc.replace(/(.{3})$/, " $1");
 }
@@ -42,6 +40,8 @@ const dimensionFieldsContainer = document.getElementById("dimensionFields");
 const form = document.getElementById("planningForm");
 const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
+const riskBanner = document.getElementById("riskBanner");
+const spinner = document.getElementById("spinner");
 
 /* -------------------------------
   UPDATE DIMENSION FIELDS
@@ -56,53 +56,30 @@ function renderDimensionFields(projectType) {
     let type = "number";
 
     switch (field) {
-      case "projection":
-        label = "Projection (m) *";
-        placeholder = "e.g., 3";
-        break;
-      case "width":
-        label = "Width (m) *";
-        placeholder = "e.g., 2.5";
-        break;
-      case "height":
-        label = "Height (m) *";
-        placeholder = "e.g., 3";
-        break;
-      case "boundaryDistance":
-        label = "Distance to nearest boundary (m) *";
-        placeholder = "e.g., 2";
-        break;
-      case "dormerVolume":
-        label = "Dormer volume (m³) *";
-        placeholder = "e.g., 40";
-        break;
-      case "newRidge":
-        label = "New ridge height (m) *";
-        placeholder = "e.g., 6.2";
-        break;
-      case "footprint":
-        label = "Footprint (m²) *";
-        placeholder = "e.g., 25";
-        break;
-      default:
-        label = field;
+      case "projection": label = "Projection (m) *"; placeholder = "e.g., 3"; break;
+      case "width": label = "Width (m) *"; placeholder = "e.g., 2.5"; break;
+      case "height": label = "Height (m) *"; placeholder = "e.g., 3"; break;
+      case "boundaryDistance": label = "Distance to nearest boundary (m) *"; placeholder = "e.g., 2"; break;
+      case "dormerVolume": label = "Dormer volume (m³) *"; placeholder = "e.g., 40"; break;
+      case "newRidge": label = "New ridge height (m) *"; placeholder = "e.g., 6.2"; break;
+      case "footprint": label = "Footprint (m²) *"; placeholder = "e.g., 25"; break;
     }
 
     const wrapper = document.createElement("div");
     wrapper.classList.add("dimension-item");
 
-wrapper.innerHTML = `
-  <label>${label}</label>
-  <input 
-    type="${type}" 
-    id="${field}" 
-    placeholder="${placeholder}" 
-    required 
-    step="any"
-    inputmode="decimal"
-    pattern="[0-9]*[.,]?[0-9]+"
-  >
-`;
+    wrapper.innerHTML = `
+      <label>${label}</label>
+      <input
+        type="${type}"
+        id="${field}"
+        placeholder="${placeholder}"
+        required
+        step="any"
+        inputmode="decimal"
+        pattern="[0-9]*[.,]?[0-9]+"
+      >
+    `;
 
     dimensionFieldsContainer.appendChild(wrapper);
   });
@@ -116,40 +93,33 @@ projectTypeSelect.addEventListener("change", () => {
   renderDimensionFields(projectTypeSelect.value);
 });
 
-
 /* -------------------------------
-    SUBMIT HANDLER
+    SUBMIT HANDLER (UPDATED)
 ------------------------------- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  
-    // Validate postcode
+
+  // Reset UI
+  riskBanner.classList.add("hidden");
+  spinner.classList.remove("hidden");
+  resultCard.classList.remove("hidden");
+  resultContent.innerHTML = `<p class="loading-text">Analysing...</p>`;
+  resultCard.scrollIntoView({ behavior: "smooth" });
+
+  // Validate and clean postcode
   const postcodeInput = document.getElementById("postcode");
   const rawPostcode = postcodeInput.value.trim();
 
   if (!isValidPostcode(rawPostcode)) {
-    resultCard.classList.remove("hidden");
+    spinner.classList.add("hidden");
     resultContent.innerHTML = `
       <p style="color:red;text-align:center;">
         Please enter a valid UK postcode (e.g., PH7 4BL).
       </p>`;
-    resultCard.scrollIntoView({ behavior: "smooth" });
     return;
   }
 
-  // Clean it
   const postcode = normalisePostcode(rawPostcode);
-
-  // Show loader
-  resultCard.classList.remove("hidden");
-  resultContent.innerHTML = `
-    <div class="loader">
-      <div></div><div></div><div></div>
-    </div>
-    <p style="text-align:center;color:#666;margin-top:8px;">Analysing your project…</p>
-  `;
-
-  resultCard.scrollIntoView({ behavior: "smooth" });
 
   // Build payload
   const payload = {
@@ -160,12 +130,13 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
-  // Add dynamic fields
+  // Attach dimensional data
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
     if (!el || !el.value.trim()) {
-      resultContent.innerHTML = "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
+      spinner.classList.add("hidden");
+      resultContent.innerHTML = "<p class='error-msg'>Missing required dimensions.</p>";
       return;
     }
     payload.dimensions[field] = el.value.trim();
@@ -182,40 +153,51 @@ form.addEventListener("submit", async (e) => {
     });
 
     const data = await res.json();
+    spinner.classList.add("hidden");
 
     if (data.error) {
-      resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
+      resultContent.innerHTML = `<p class="error-msg">${data.error}</p>`;
       return;
     }
-    
-    // STEP 4: Auto-fill constraints into dropdown
-if (data.autoConstraints && data.autoConstraints !== "None") {
-  document.getElementById("constraints").value = data.autoConstraints;
-}
 
-// STEP 4: Show Local Authority label above results
-if (data.localAuthority) {
-  resultContent.innerHTML = `
-    <p class="la-label">
-      Local authority: <strong>${data.localAuthority}</strong>
-    </p>
-  ` + resultContent.innerHTML;
-}
+    // Auto-fill constraints dropdown
+    if (data.autoConstraints && data.autoConstraints !== "None") {
+      document.getElementById("constraints").value = data.autoConstraints;
+    }
 
-    // SUCCESS — AI Output
+    // Local Authority label
+    let laLabel = "";
+    if (data.localAuthority) {
+      laLabel = `
+        <p class="la-label">
+          Local authority: <strong>${data.localAuthority}</strong>
+        </p>
+      `;
+    }
+
+    // High sensitivity area banner
+    if (data.sensitivityLevel === "high") {
+      riskBanner.textContent =
+        "⚠ This area includes designated or sensitive planning zones. Permitted development rights may be restricted.";
+      riskBanner.classList.remove("hidden");
+    }
+
+    // Render results
     resultContent.innerHTML = `
       <div class="fade-in">
+        ${laLabel}
         ${data.conclusion_html || ""}
         ${data.summary_html || ""}
         ${data.details_html || ""}
-        <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
-          <strong>Disclaimer:</strong> This tool provides an automated general overview.
-          Planning rules vary locally — always confirm with your local authority or a qualified planning consultant.
+        <p class="disclaimer">
+          <strong>Disclaimer:</strong> This automated tool provides a general overview.
+          Always verify with your local authority or a qualified planning consultant.
         </p>
       </div>
     `;
 
   } catch (err) {
-    resultContent.innerHTML = `<p style="color:red">Request failed: ${err.message}</p>`;
+    spinner.classList.add("hidden");
+    resultContent.innerHTML = `<p class='error-msg'>Request failed: ${err.message}</p>`;
   }
 });
