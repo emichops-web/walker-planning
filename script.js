@@ -2,32 +2,30 @@ const form = document.getElementById("planningForm");
 const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
 const spinner = document.getElementById("loadingSpinner");
+const ctaContainer = document.getElementById("ctaContainer");
 const submitBtn = document.querySelector(".submit-btn");
 
-// Your Worker API URL
 const WORKER_URL = "https://walker-planning-worker.emichops.workers.dev/";
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Show results panel + loading message
+  // Show results card immediately
   resultCard.classList.remove("hidden");
   resultContent.innerHTML = "Analysing…";
 
-  // Activate spinner
+  // Show spinner & disable button
   spinner.classList.remove("hidden");
-
-  // Disable button + change text
   submitBtn.disabled = true;
   submitBtn.innerText = "Checking...";
 
-  // Collect form data
   const payload = {
     postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value,
-    extensionType: document.getElementById("extensionType").value,
-    depth: document.getElementById("depth").value,
+    projectType: document.getElementById("projectType").value,
+    projection: document.getElementById("projection").value,
     height: document.getElementById("height").value,
+    boundary: document.getElementById("boundary").value,
     constraints: document.getElementById("constraints").value
   };
 
@@ -43,14 +41,18 @@ form.addEventListener("submit", async (e) => {
     if (data.error) {
       resultContent.innerHTML = `<p style="color:red;">${data.error}</p>`;
     } else {
-      // Render structured AI result
+      // Colour-coded verdict box injected
       resultContent.innerHTML = `
-        ${data.conclusion_html}
+        ${data.verdict_html}
         ${data.summary_html}
-        ${data.details_html}
+        ${data.issues_html}
+        ${data.notes_html}
       `;
 
-      // Smooth scroll to results
+      // Reveal CTA
+      ctaContainer.classList.remove("hidden");
+
+      // Smooth scroll
       resultCard.scrollIntoView({ behavior: "smooth" });
     }
 
@@ -58,7 +60,7 @@ form.addEventListener("submit", async (e) => {
     resultContent.innerHTML = `<p style="color:red;">Unexpected error: ${err.message}</p>`;
   }
 
-  // Always hide spinner + re-enable button after response
+  // Reset UI
   spinner.classList.add("hidden");
   submitBtn.disabled = false;
   submitBtn.innerText = "Run Feasibility Check";
