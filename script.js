@@ -72,31 +72,57 @@ function renderDimensionFields(projectType) {
   });
 }
 
+// Initial render
 renderDimensionFields(projectTypeSelect.value);
 
+// When project type changes
 projectTypeSelect.addEventListener("change", () => {
   renderDimensionFields(projectTypeSelect.value);
 });
 
 /* =======================================================
-   SUBMIT HANDLER
+   BULLET-PROOF AUTOSCROLL (Safari-safe)
+======================================================= */
+function scrollToResults() {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      resultCard.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+      // Backup autopush for Safari layout shifts
+      setTimeout(() => {
+        resultCard.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }, 250);
+    });
+  });
+}
+
+/* =======================================================
+   FORM SUBMIT HANDLER
 ======================================================= */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const postcode = document.getElementById("postcode").value.trim().toUpperCase();
 
-  // Postcode validation
+  // Validate postcode
   if (!isValidPostcode(postcode)) {
     resultCard.classList.remove("hidden");
+    spinner.classList.add("hidden");
     resultContent.innerHTML =
       `<p style="color:red;text-align:center;">
          Please enter a valid UK postcode (e.g., PH7 4BL).
        </p>`;
+    scrollToResults();
     return;
   }
 
-  // Show result card and loader
+  // Show loader
   resultCard.classList.remove("hidden");
   resultContent.innerHTML = "";
   spinner.classList.remove("hidden");
@@ -110,14 +136,15 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
-  // Add dynamic fields
+  // Collect dynamic fields
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
     if (!el || !el.value.trim()) {
       spinner.classList.add("hidden");
       resultContent.innerHTML =
-        "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
+        "<p style='color:red;text-align:center'>Please complete all required measurements.</p>";
+      scrollToResults();
       return;
     }
     payload.dimensions[field] = el.value.trim();
@@ -138,19 +165,20 @@ form.addEventListener("submit", async (e) => {
 
     if (data.error) {
       resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
+      scrollToResults();
       return;
     }
 
-    // Extract fields safely
+    // Extract safe output
     const conclusion = data.conclusion_html || "";
     const summary = data.summary_html || "";
     const details = data.details_html || "";
     const authority = data.localAuthority || "Unknown local authority";
 
-    // Sensitivity warning
+    // Sensitivity warning (auto-constraints)
     const warning = data.autoConstraints && data.autoConstraints !== "None"
       ? `<div class="sensitivity-warning fade-in">
-           ⚠ Location appears to be within a designated or sensitive planning area.
+           ⚠ This postcode appears within a designated or sensitive planning area.
          </div>`
       : "";
 
@@ -160,7 +188,7 @@ form.addEventListener("submit", async (e) => {
       </p>
     `;
 
-    // Render
+    // Render result
     resultContent.innerHTML = `
       ${warning}
       ${authorityBlock}
@@ -169,20 +197,18 @@ form.addEventListener("submit", async (e) => {
         ${summary}
         ${details}
         <p class="disclaimer" style="margin-top:20px; font-size:0.9rem; opacity:0.9;">
-          <strong>Disclaimer:</strong> This tool provides a general overview.
-          Always confirm with your local authority or a qualified planning consultant.
+          <strong>Disclaimer:</strong> This tool provides an automated overview.
+          Always confirm findings with your local authority or a qualified planning consultant.
         </p>
       </div>
     `;
 
-    // SCROLL (fixed version)
-    setTimeout(() => {
-      resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 180);
+    scrollToResults();
 
   } catch (err) {
     spinner.classList.add("hidden");
     resultContent.innerHTML =
-      `<p style="color:red">Error: ${err.message}</p>`;
+      `<p style="color:red">Request failed: ${err.message}</p>`;
+    scrollToResults();
   }
 });
