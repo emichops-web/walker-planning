@@ -1,52 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Walker Planning – Permitted Development Checker</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- ======================================================
-     STICKY TOP BANNER — LOGO ONLY
-====================================================== -->
-<header class="top-banner">
-  <div class="banner-inner">
-    <img src="logo.png" alt="Walker Planning Logo" class="banner-logo">
-  </div>
+<!-- FIXED HEADER -->
+<header class="top-bar">
+  <img src="logo.png" alt="Walker Planning" class="top-logo">
 </header>
 
-<!-- ======================================================
-     HERO SECTION — TEXT MOVED RIGHT
-====================================================== -->
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-overlay">
+  <img src="hero.png" alt="Home extension example" class="hero-img">
+  <div class="hero-text">
     <h1>Instant Permitted Development Check</h1>
-    <p>AI-powered guidance for UK homeowners</p>
+    <p>Free AI-powered feasibility assessment</p>
   </div>
 </section>
 
-<!-- ======================================================
-     FORM WRAPPER
-====================================================== -->
+<!-- FORM -->
 <div class="form-wrapper">
   <form id="planningForm" class="form-card">
 
-    <label for="postcode">Postcode *</label>
+    <label>Postcode *</label>
     <input id="postcode" type="text" placeholder="e.g., PH7 4BL" required>
 
-    <label for="propertyType">Property Type *</label>
+    <label>Property Type *</label>
     <select id="propertyType" required>
       <option>Detached</option>
       <option>Semi-detached</option>
       <option>Terraced</option>
-      <option>Bungalow</option>
       <option>Flat</option>
+      <option>Bungalow</option>
     </select>
 
-    <label for="projectType">Project Type *</label>
+    <label>Project Type *</label>
     <select id="projectType" required>
       <option>Rear extension</option>
       <option>Side extension</option>
@@ -63,13 +56,11 @@
       <option>Windows / doors</option>
       <option>Solar panels</option>
       <option>Fencing / gates</option>
-      <option>Garden room</option>
     </select>
 
-    <!-- Dynamic dimension fields -->
     <div id="dimensionFields"></div>
 
-    <label for="constraints">Constraints *</label>
+    <label>Constraints *</label>
     <select id="constraints">
       <option>None</option>
       <option>Conservation area</option>
@@ -78,20 +69,21 @@
       <option>National park</option>
     </select>
 
+    <!-- NEW PROJECT DESCRIPTION -->
+    <label>Project Description (optional)</label>
+    <textarea id="projectDescription" placeholder="Describe your project in your own words...
+Example: Single-storey rear extension, pitched roof, approx. 3m projection replacing old conservatory, brick finish to match house."></textarea>
+
     <button type="submit" class="submit-btn">Run Feasibility Check</button>
+
   </form>
 </div>
 
-<!-- ======================================================
-     RESULT CARD
-====================================================== -->
+<!-- RESULTS AREA -->
 <div id="resultCard" class="result-card hidden">
   <h2>Your Planning Feasibility Result</h2>
 
-  <!-- Loader -->
-  <div id="spinner" class="spinner hidden">
-    <div></div><div></div><div></div>
-  </div>
+  <div id="spinner" class="spinner hidden"></div>
 
   <div id="resultContent"></div>
 </div>
@@ -100,6 +92,7 @@
   © Walker Planning · Scotland · 2025
 </footer>
 
-<script src="script.js?v=4"></script>
+<script src="script.js"></script>
+
 </body>
 </html>
