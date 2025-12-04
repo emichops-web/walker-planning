@@ -1,6 +1,6 @@
-/* -------------------------------
-  PROJECT TYPE → DIMENSION RULES
-------------------------------- */
+/* ============================================================
+   DYNAMIC DIMENSION RULES
+============================================================ */
 const dimensionRules = {
   "Rear extension": ["projection", "height", "boundaryDistance"],
   "Side extension": ["width", "height", "boundaryDistance"],
@@ -16,37 +16,41 @@ const dimensionRules = {
   "Garage conversion": [],
   "Windows / doors": [],
   "Solar panels": ["projection"],
-  "Fencing / gates": ["height"]
+  "Fencing / gates": ["height"],
+  "Garden room": ["projection", "height", "boundaryDistance"]
 };
 
-/* -------------------------------
-    POSTCODE VALIDATION + CLEANING
-------------------------------- */
-function isValidPostcode(postcode) {
-  const pattern = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
-  return pattern.test(postcode.trim());
-}
-
-function normalisePostcode(postcode) {
-  const pc = postcode.toUpperCase().replace(/\s+/g, "");
-  return pc.replace(/(.{3})$/, " $1");
-}
-
-/* -------------------------------
-  DOM ELEMENTS
-------------------------------- */
+/* ============================================================
+   DOM ELEMENTS
+============================================================ */
+const form = document.getElementById("planningForm");
 const projectTypeSelect = document.getElementById("projectType");
 const dimensionFieldsContainer = document.getElementById("dimensionFields");
-const form = document.getElementById("planningForm");
 const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
-const riskBanner = document.getElementById("riskBanner");
 const spinner = document.getElementById("spinner");
+const apiURL = "https://walker-planning-worker.emichops.workers.dev/";
 
-/* -------------------------------
-  UPDATE DIMENSION FIELDS
-------------------------------- */
+/* ============================================================
+   RESULT LOCK (Prevents UI from overwriting results)
+============================================================ */
+let resultLocked = false;
+
+/* ============================================================
+   POSTCODE VALIDATION (UK Format)
+============================================================ */
+function isValidUKPostcode(pc) {
+  const cleaned = pc.replace(/\s+/g, "");
+  const regex = /^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/i;
+  return regex.test(cleaned);
+}
+
+/* ============================================================
+   RENDER DIMENSION FIELDS
+============================================================ */
 function renderDimensionFields(projectType) {
+  if (resultLocked) return; // ⛔ Prevent UI resets after results show
+
   const fields = dimensionRules[projectType] || [];
   dimensionFieldsContainer.innerHTML = "";
 
@@ -56,13 +60,36 @@ function renderDimensionFields(projectType) {
     let type = "number";
 
     switch (field) {
-      case "projection": label = "Projection (m) *"; placeholder = "e.g., 3"; break;
-      case "width": label = "Width (m) *"; placeholder = "e.g., 2.5"; break;
-      case "height": label = "Height (m) *"; placeholder = "e.g., 3"; break;
-      case "boundaryDistance": label = "Distance to nearest boundary (m) *"; placeholder = "e.g., 2"; break;
-      case "dormerVolume": label = "Dormer volume (m³) *"; placeholder = "e.g., 40"; break;
-      case "newRidge": label = "New ridge height (m) *"; placeholder = "e.g., 6.2"; break;
-      case "footprint": label = "Footprint (m²) *"; placeholder = "e.g., 25"; break;
+      case "projection":
+        label = "Projection (m) *";
+        placeholder = "e.g., 3";
+        break;
+      case "width":
+        label = "Width (m) *";
+        placeholder = "e.g., 2.5";
+        break;
+      case "height":
+        label = "Height (m) *";
+        placeholder = "e.g., 3";
+        break;
+      case "boundaryDistance":
+        label = "Distance to nearest boundary (m) *";
+        placeholder = "e.g., 2";
+        break;
+      case "dormerVolume":
+        label = "Dormer volume (m³) *";
+        placeholder = "e.g., 40";
+        break;
+      case "newRidge":
+        label = "New ridge height (m) *";
+        placeholder = "e.g., 6.2";
+        break;
+      case "footprint":
+        label = "Footprint (m²) *";
+        placeholder = "e.g., 25";
+        break;
+      default:
+        label = field;
     }
 
     const wrapper = document.createElement("div");
@@ -70,83 +97,72 @@ function renderDimensionFields(projectType) {
 
     wrapper.innerHTML = `
       <label>${label}</label>
-      <input
-        type="${type}"
-        id="${field}"
-        placeholder="${placeholder}"
-        required
-        step="any"
-        inputmode="decimal"
-        pattern="[0-9]*[.,]?[0-9]+"
-      >
+      <input type="${type}" id="${field}" step="0.1" placeholder="${placeholder}" required>
     `;
 
     dimensionFieldsContainer.appendChild(wrapper);
   });
 }
 
-/* Update fields on load */
+/* Initial dimension field load */
 renderDimensionFields(projectTypeSelect.value);
 
-/* Update fields when project changes */
+/* Update fields when project type changes */
 projectTypeSelect.addEventListener("change", () => {
+  if (resultLocked) return;
   renderDimensionFields(projectTypeSelect.value);
 });
 
-/* -------------------------------
-    SUBMIT HANDLER (UPDATED)
-------------------------------- */
+/* ============================================================
+   FORM SUBMISSION
+============================================================ */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Reset UI
-  riskBanner.classList.add("hidden");
-  spinner.classList.remove("hidden");
-  resultCard.classList.remove("hidden");
-  resultContent.innerHTML = `<p class="loading-text">Analysing...</p>`;
-  resultCard.scrollIntoView({ behavior: "smooth" });
-
-  // Validate and clean postcode
-  const postcodeInput = document.getElementById("postcode");
-  const rawPostcode = postcodeInput.value.trim();
-
-  if (!isValidPostcode(rawPostcode)) {
-    spinner.classList.add("hidden");
+  // Validate postcode
+  const postcode = document.getElementById("postcode").value.trim();
+  if (!isValidUKPostcode(postcode)) {
+    resultCard.classList.remove("hidden");
     resultContent.innerHTML = `
-      <p style="color:red;text-align:center;">
+      <p style='color:red;text-align:center'>
         Please enter a valid UK postcode (e.g., PH7 4BL).
       </p>`;
     return;
   }
 
-  const postcode = normalisePostcode(rawPostcode);
+  // Show spinner
+  spinner.classList.remove("hidden");
+  resultCard.classList.remove("hidden");
+  resultContent.innerHTML = ""; // cleared while spinner shows
+  resultCard.scrollIntoView({ behavior: "smooth" });
 
   // Build payload
   const payload = {
     postcode,
     propertyType: document.getElementById("propertyType").value.trim(),
-    projectType: document.getElementById("projectType").value.trim(),
+    projectType: projectTypeSelect.value.trim(),
     constraints: document.getElementById("constraints").value.trim(),
     dimensions: {}
   };
 
-  // Attach dimensional data
+  // Add dynamic dimension values
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
     if (!el || !el.value.trim()) {
       spinner.classList.add("hidden");
-      resultContent.innerHTML = "<p class='error-msg'>Missing required dimensions.</p>";
+      resultContent.innerHTML =
+        "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
       return;
     }
     payload.dimensions[field] = el.value.trim();
   }
 
-  /* ---------------------------
-      SEND TO WORKER
-  ----------------------------*/
+  /* ============================================================
+     SEND REQUEST TO WORKER
+  ============================================================ */
   try {
-    const res = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
+    const res = await fetch(apiURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -156,48 +172,48 @@ form.addEventListener("submit", async (e) => {
     spinner.classList.add("hidden");
 
     if (data.error) {
-      resultContent.innerHTML = `<p class="error-msg">${data.error}</p>`;
+      resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
       return;
     }
 
-    // Auto-fill constraints dropdown
-    if (data.autoConstraints && data.autoConstraints !== "None") {
-      document.getElementById("constraints").value = data.autoConstraints;
+    // Mark results as locked (prevent UI reset)
+    resultLocked = true;
+
+    /* ============================================================
+       BUILD RESULTS UI
+    ============================================================ */
+
+    let warningBanner = "";
+    if (data.autoConstraints !== "None") {
+      warningBanner = `
+        <div class="sensitivity-banner fade-in">
+          ⚠ This area includes designated or sensitive planning zones. 
+          Permitted development rights may be restricted.
+        </div>`;
     }
 
-    // Local Authority label
-    let laLabel = "";
-    if (data.localAuthority) {
-      laLabel = `
-        <p class="la-label">
-          Local authority: <strong>${data.localAuthority}</strong>
-        </p>
-      `;
-    }
+    let localAuthorityTag = `
+      <p class="local-authority-tag fade-in">
+        📍 Local authority: <strong>${data.localAuthority}</strong>
+      </p>`;
 
-    // High sensitivity area banner
-    if (data.sensitivityLevel === "high") {
-      riskBanner.textContent =
-        "⚠ This area includes designated or sensitive planning zones. Permitted development rights may be restricted.";
-      riskBanner.classList.remove("hidden");
-    }
-
-    // Render results
     resultContent.innerHTML = `
+      ${warningBanner}
+      ${localAuthorityTag}
+
       <div class="fade-in">
-        ${laLabel}
         ${data.conclusion_html || ""}
         ${data.summary_html || ""}
         ${data.details_html || ""}
-        <p class="disclaimer">
-          <strong>Disclaimer:</strong> This automated tool provides a general overview.
-          Always verify with your local authority or a qualified planning consultant.
+        <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
+          <strong>Disclaimer:</strong> This tool provides an automated overview.
+          Planning rules vary locally — always confirm with your local authority or a qualified planning consultant.
         </p>
       </div>
     `;
 
   } catch (err) {
     spinner.classList.add("hidden");
-    resultContent.innerHTML = `<p class='error-msg'>Request failed: ${err.message}</p>`;
+    resultContent.innerHTML = `<p style="color:red">Request failed: ${err.message}</p>`;
   }
 });
