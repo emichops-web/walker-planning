@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Walker Planning – Permitted Development Checker</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 
   <!-- Schema.org structured data -->
   <script type="application/ld+json">
@@ -12,7 +12,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Walker Planning – Permitted Development Checker",
-    "description": "Instant AI-powered assessment of UK permitted development rules for home extensions.",
+    "description": "Instant AI-powered assessment of UK permitted development rules for home extensions and home improvements.",
     "url": "https://walker-planning.pages.dev",
     "publisher": {
       "@type": "Organization",
@@ -25,76 +25,142 @@
 </head>
 
 <body>
-<!-- STICKY HEADER -->
+
+<!-- Sticky Header -->
 <header class="site-header">
   <div class="header-inner">
-    <img src="logo.png" alt="Walker Planning" class="header-logo">
-    <nav class="header-nav">
-      <a href="#planningForm">Check</a>
-      <a href="#resultCard">Result</a>
-    </nav>
+    <img src="logo.png" alt="Walker Planning" class="header-logo" />
   </div>
 </header>
 
-<!-- HERO SECTION (reduced height, no grey overlay) -->
-<section class="hero-section"></section>
+<!-- HERO SECTION -->
+<section class="hero-section">
+  <div class="hero-content">
+    <img src="logo.png" alt="Walker Planning Logo" class="hero-hero-logo" />
+    <p class="hero-subtitle">Instant Permitted Development Check (AI-powered)</p>
+  </div>
+</section>
 
-  <!-- FORM CONTAINER -->
-  <div class="form-wrapper">
-    <form id="planningForm" class="form-card">
+<!-- FORM -->
+<div class="form-wrapper">
+  <form id="planningForm" class="form-card">
 
-      <label>Postcode *</label>
-      <input id="postcode" type="text" placeholder="e.g., PH7 4BL" required>
+    <h2>Property Details</h2>
 
-      <label>Property Type *</label>
-      <select id="propertyType" required>
-        <option>Detached</option>
-        <option>Semi-detached</option>
-        <option>Terraced</option>
-        <option>Flat</option>
-        <option>Bungalow</option>
+    <div class="form-grid">
+
+      <div class="form-field">
+        <label for="postcode">Postcode *</label>
+        <input id="postcode" type="text" placeholder="e.g., PH7 4BL" required />
+      </div>
+
+      <div class="form-field">
+        <label for="propertyType">Property Type *</label>
+        <select id="propertyType" required>
+          <option>Detached</option>
+          <option>Semi-detached</option>
+          <option>Terraced</option>
+          <option>Flat</option>
+          <option>Bungalow</option>
+        </select>
+      </div>
+
+    </div>
+
+    <h2>Project Type</h2>
+
+    <div class="form-field">
+      <label for="projectType">Select your project *</label>
+      <select id="projectType" required>
+        <optgroup label="Home Extensions">
+          <option>Rear extension</option>
+          <option>Side extension</option>
+          <option>Wrap-around extension</option>
+          <option>Two-storey extension</option>
+          <option>Porch / front extension</option>
+        </optgroup>
+
+        <optgroup label="Loft & Roof Works">
+          <option>Loft dormer</option>
+          <option>Hip-to-gable loft conversion</option>
+          <option>Mansard loft conversion</option>
+          <option>Rooflights / Velux windows</option>
+        </optgroup>
+
+        <optgroup label="Outbuildings & Conversions">
+          <option>Garden room / office</option>
+          <option>Garage conversion</option>
+        </optgroup>
+
+        <optgroup label="External Works">
+          <option>New windows / doors</option>
+          <option>Solar panels</option>
+          <option>Decking</option>
+          <option>Driveway / hardstanding</option>
+          <option>Boundary fences / walls</option>
+        </optgroup>
       </select>
+    </div>
 
-      <label>Extension Type *</label>
-      <select id="extensionType" required>
-        <option>Rear extension</option>
-        <option>Side extension</option>
-        <option>Wrap-around extension</option>
-        <option>Outbuilding</option>
-        <option>Loft conversion</option>
-      </select>
+    <h2>Dimensions</h2>
 
-      <label>Depth (metres) *</label>
-      <input id="depth" type="number" min="1" step="0.1" required>
+    <div class="form-grid">
 
-      <label>Height (metres) *</label>
-      <input id="height" type="number" min="1" step="0.1" required>
+      <div class="form-field">
+        <label for="projection">Projection (m) *</label>
+        <input id="projection" type="number" step="0.1" min="0" required />
+      </div>
 
-      <label>Constraints *</label>
+      <div class="form-field">
+        <label for="height">Height (m) *</label>
+        <input id="height" type="number" step="0.1" min="0" required />
+      </div>
+
+      <div class="form-field">
+        <label for="boundary">Distance to nearest boundary *</label>
+        <select id="boundary" required>
+          <option>Within 2 metres</option>
+          <option>More than 2 metres</option>
+        </select>
+      </div>
+
+    </div>
+
+    <h2>Site Constraints</h2>
+
+    <div class="form-field">
+      <label for="constraints">Constraints</label>
       <select id="constraints">
         <option>None</option>
         <option>Conservation area</option>
         <option>Listed building</option>
-        <option>Article 4</option>
+        <option>Article 4 direction</option>
         <option>Green belt</option>
       </select>
+    </div>
 
-      <button type="submit" class="submit-btn">Run Feasibility Check</button>
-    </form>
+    <button type="submit" class="submit-btn">Run Feasibility Check</button>
+  </form>
+</div>
+
+<!-- RESULTS CARD -->
+<div id="resultCard" class="result-card hidden">
+  <h2>Your Planning Feasibility Result</h2>
+  <div id="resultContent">Analysing…</div>
+
+  <div id="ctaContainer" class="cta-container hidden">
+    <p>Need a detailed, professional assessment?</p>
+    <a href="#" class="cta-btn">Book a Full Planning Review</a>
   </div>
+</div>
 
-  <!-- RESULTS -->
-  <div id="resultCard" class="result-card hidden">
-      <h2>Your Planning Feasibility Result</h2>
-      <div id="resultContent">Analysing…</div>
-  </div>
-
-  <footer>
-    © Walker Planning · Scotland · 2025
-    <span class="ai-credit"> — Powered by GPT-4.1 (AI-enhanced)</span>
-  </footer>
+<footer>
+  © Walker Planning · Scotland · 2025
+  <span class="ai-credit">— Powered by GPT-4.1 (AI-enhanced)</span>
+</footer>
 
 <script src="script.js"></script>
 <div id="loadingSpinner" class="spinner hidden"></div>
+
 </body>
 </html>
