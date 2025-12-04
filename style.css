@@ -280,6 +280,16 @@ input:focus, select:focus {
   border: 1px solid #f0d88c;
 }
 
+.la-label {
+  background: #eef3ff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: #2d3e76;
+  display: inline-block;
+}
+
 .result-card p {
   margin-bottom: 14px;
 }
