@@ -27,8 +27,8 @@ const projectTypeSelect = document.getElementById("projectType");
 const dimensionFieldsContainer = document.getElementById("dimensionFields");
 const form = document.getElementById("planningForm");
 const resultCard = document.getElementById("resultCard");
-const resultContent = document.getElementById("resultContent");
 const spinner = document.getElementById("spinner");
+const resultContent = document.getElementById("resultContent");
 
 /* =======================================================
    POSTCODE VALIDATION
@@ -39,7 +39,7 @@ function isValidPostcode(pc) {
 }
 
 /* =======================================================
-   RENDER DYNAMIC DIMENSION FIELDS
+   DYNAMIC DIMENSION FIELD RENDERING
 ======================================================= */
 function renderDimensionFields(projectType) {
   const fields = dimensionRules[projectType] || [];
@@ -75,29 +75,33 @@ function renderDimensionFields(projectType) {
 // Initial render
 renderDimensionFields(projectTypeSelect.value);
 
-// When project type changes
+// Update dimensions when project type changes
 projectTypeSelect.addEventListener("change", () => {
   renderDimensionFields(projectTypeSelect.value);
 });
 
 /* =======================================================
-   BULLET-PROOF AUTOSCROLL (Safari-safe)
+   BULLET-PROOF AUTOSCROLL (never fails)
 ======================================================= */
 function scrollToResults() {
+  const header = document.querySelector(".top-banner");
+  const headerHeight = header ? header.offsetHeight : 0;
+
+  const targetY =
+    resultCard.getBoundingClientRect().top +
+    window.scrollY -
+    headerHeight -
+    10;
+
+  function doScroll() {
+    window.scrollTo({ top: targetY, behavior: "smooth" });
+  }
+
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      resultCard.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
-      // Backup autopush for Safari layout shifts
-      setTimeout(() => {
-        resultCard.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      }, 250);
+      doScroll();
+      setTimeout(doScroll, 120);
+      setTimeout(doScroll, 260);
     });
   });
 }
@@ -114,18 +118,22 @@ form.addEventListener("submit", async (e) => {
   if (!isValidPostcode(postcode)) {
     resultCard.classList.remove("hidden");
     spinner.classList.add("hidden");
-    resultContent.innerHTML =
-      `<p style="color:red;text-align:center;">
-         Please enter a valid UK postcode (e.g., PH7 4BL).
-       </p>`;
+    resultContent.innerHTML = `
+      <p style="color:red;text-align:center;">
+        Please enter a valid UK postcode (e.g., PH7 4BL).
+      </p>
+    `;
     scrollToResults();
     return;
   }
 
-  // Show loader
+  // Show result area + loader
   resultCard.classList.remove("hidden");
   resultContent.innerHTML = "";
   spinner.classList.remove("hidden");
+
+  // SCROLL NOW — to show loader immediately
+  scrollToResults();
 
   // Build payload
   const payload = {
@@ -136,14 +144,17 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
-  // Collect dynamic fields
+  // Validate dynamic dimensions
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
     if (!el || !el.value.trim()) {
       spinner.classList.add("hidden");
-      resultContent.innerHTML =
-        "<p style='color:red;text-align:center'>Please complete all required measurements.</p>";
+      resultContent.innerHTML = `
+        <p style='color:red;text-align:center'>
+          Please complete all required dimensions.
+        </p>
+      `;
       scrollToResults();
       return;
     }
@@ -169,13 +180,12 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // Extract safe output
+    // Safe extracted fields
     const conclusion = data.conclusion_html || "";
     const summary = data.summary_html || "";
     const details = data.details_html || "";
     const authority = data.localAuthority || "Unknown local authority";
 
-    // Sensitivity warning (auto-constraints)
     const warning = data.autoConstraints && data.autoConstraints !== "None"
       ? `<div class="sensitivity-warning fade-in">
            ⚠ This postcode appears within a designated or sensitive planning area.
@@ -183,12 +193,12 @@ form.addEventListener("submit", async (e) => {
       : "";
 
     const authorityBlock = `
-      <p style="font-size:0.95rem; opacity:0.9;">
+      <p style="font-size:0.95rem; opacity:0.9; margin-bottom:10px;">
         <strong>Local Authority:</strong> ${authority}
       </p>
     `;
 
-    // Render result
+    // Render full results
     resultContent.innerHTML = `
       ${warning}
       ${authorityBlock}
@@ -203,12 +213,13 @@ form.addEventListener("submit", async (e) => {
       </div>
     `;
 
+    // SCROLL AGAIN — when results appear
     scrollToResults();
 
   } catch (err) {
     spinner.classList.add("hidden");
     resultContent.innerHTML =
-      `<p style="color:red">Request failed: ${err.message}</p>`;
+      `<p style="color:red">Error: ${err.message}</p>`;
     scrollToResults();
   }
 });
