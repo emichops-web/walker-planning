@@ -112,7 +112,9 @@ form.addEventListener("submit", async (e) => {
   spinner.classList.remove("hidden");
 spinner.innerHTML = `
   <div class="loader">
-      <div></div><div></div><div></div>
+    <div></div>
+    <div></div>
+    <div></div>
   </div>
 `;
 
