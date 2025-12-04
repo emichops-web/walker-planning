@@ -35,6 +35,8 @@ let resultLocked = false;
   RENDER DIMENSIONS
 ------------------------------- */
 function renderDimensionFields(projectType) {
+  if (resultLocked) return; // Prevent UI wipes after results appear
+
   const fields = dimensionRules[projectType] || [];
   dimensionFieldsContainer.innerHTML = "";
 
@@ -86,7 +88,7 @@ function renderDimensionFields(projectType) {
   });
 }
 
-/* Initial load */
+/* Initial render */
 renderDimensionFields(projectTypeSelect.value);
 
 /* -------------------------------
@@ -97,7 +99,6 @@ let lastProjectValue = projectTypeSelect.value;
 projectTypeSelect.addEventListener("change", () => {
   const current = projectTypeSelect.value;
 
-  // Prevent re-render when result is shown OR value hasn't changed
   if (resultLocked || current === lastProjectValue) return;
 
   lastProjectValue = current;
@@ -105,15 +106,12 @@ projectTypeSelect.addEventListener("change", () => {
 });
 
 /* -------------------------------
-    SUBMIT HANDLER (FINAL FIXED)
+    FINAL SUBMIT HANDLER (STABLE)
 ------------------------------- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Lock UI to stop further re-renders
-  resultLocked = true;
-
-  // Display result card + spinner
+  // Prepare UI
   resultCard.classList.remove("hidden");
   spinner.classList.remove("hidden");
   resultContent.innerHTML = "";
@@ -129,7 +127,7 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
-  // Add dynamic dimension inputs
+  // Add dynamic dimensions
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
@@ -153,7 +151,6 @@ form.addEventListener("submit", async (e) => {
     });
 
     const data = await res.json();
-
     spinner.classList.add("hidden");
 
     if (data.error) {
@@ -161,18 +158,20 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // Optional warnings
-    let warningHTML = data.autoConstraints !== "None"
-      ? `<div class="sensitivity-banner fade-in">
-          ⚠ This appears to be within a designated or sensitive planning area.
-         </div>`
-      : "";
+    // Build optional banners
+    let warningHTML =
+      data.autoConstraints !== "None"
+        ? `<div class="sensitivity-banner fade-in">
+             ⚠ This appears to be within a designated or sensitive planning area.
+           </div>`
+        : "";
 
-    let authorityHTML = data.localAuthority
-      ? `<p class="result-meta"><strong>Local Authority:</strong> ${data.localAuthority}</p>`
-      : "";
+    let authorityHTML =
+      data.localAuthority
+        ? `<p class="result-meta"><strong>Local Authority:</strong> ${data.localAuthority}</p>`
+        : "";
 
-    // Render results
+    // Render result
     resultContent.innerHTML = `
       ${warningHTML}
       ${authorityHTML}
@@ -186,6 +185,9 @@ form.addEventListener("submit", async (e) => {
         </p>
       </div>
     `;
+
+    // 🔒 Lock UI *after* result fully rendered
+    resultLocked = true;
 
   } catch (err) {
     spinner.classList.add("hidden");
