@@ -5,18 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Walker Planning – Permitted Development Checker</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Walker Planning – Permitted Development Checker",
+    "description": "Instant AI-powered assessment of UK permitted development rules for home extensions.",
+    "url": "https://walker-planning.pages.dev",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Walker Planning"
+    },
+    "applicationCategory": "RealEstateApplication",
+    "operatingSystem": "All"
+  }
+  </script>
 </head>
 
 <body>
-<header class="hero">
-  <img src="hero.png" alt="Home extension" class="hero-img">
-
-  <div class="hero-overlay">
-    <img src="logo.png" alt="Walker Planning Logo" class="hero-logo">
-    <h1>Walker Planning</h1>
-    <p>Instant Permitted Development Check (AI-powered)</p>
+<!-- STICKY HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <img src="logo.png" alt="Walker Planning" class="header-logo">
+    <nav class="header-nav">
+      <a href="#planningForm">Check</a>
+      <a href="#resultCard">Result</a>
+    </nav>
   </div>
 </header>
+
+<!-- HERO SECTION (reduced height, no grey overlay) -->
+<section class="hero-section"></section>
 
   <!-- FORM CONTAINER -->
   <div class="form-wrapper">
@@ -58,7 +79,7 @@
         <option>Green belt</option>
       </select>
 
-      <button type="submit" class="submit-btn">Run Quick Check</button>
+      <button type="submit" class="submit-btn">Run Feasibility Check</button>
     </form>
   </div>
 
@@ -70,8 +91,10 @@
 
   <footer>
     © Walker Planning · Scotland · 2025
+    <span class="ai-credit"> — Powered by GPT-4.1 (AI-enhanced)</span>
   </footer>
 
 <script src="script.js"></script>
+<div id="loadingSpinner" class="spinner hidden"></div>
 </body>
 </html>
