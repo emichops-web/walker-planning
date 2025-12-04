@@ -1,206 +1,218 @@
-/* ----------------------------------------------------
-   GLOBAL
----------------------------------------------------- */
+/* ===============================
+   GLOBAL SETTINGS
+=============================== */
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
-  background: #f7f7f7;
+  background: #f4f4f4;
   color: #333;
 }
 
-.hidden {
-  display: none;   /* ← the ONLY correct version */
+h2, h3 {
+  margin-top: 0;
 }
 
-/* ----------------------------------------------------
-   HERO / HEADER
----------------------------------------------------- */
-header.hero {
+/* ===============================
+   HERO HEADER
+=============================== */
+.hero {
+  width: 100%;
+  height: 280px;
+  background-image: url("hero.png");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   position: relative;
-  width: 100%;
-  height: 260px;
-  overflow: hidden;
+  text-align: center;
 }
 
-.hero-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero-overlay {
+.hero::before {
+  content: "";
   position: absolute;
-  bottom: 20px;
-  left: 20px;
-  color: white;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  inset: 0;
+  background: rgba(0,0,0,0.25);
 }
 
 .hero-logo {
-  width: 140px;
-  margin-bottom: 10px;
+  width: 160px;
+  z-index: 2;
 }
 
-/* ----------------------------------------------------
-   FORM
----------------------------------------------------- */
-.form-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: -40px;
-  padding: 0 15px;
-}
-
-.form-card {
-  background: white;
-  padding: 20px 24px;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 520px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-label {
-  font-weight: 600;
-  display: block;
-  margin-top: 16px;
-}
-
-input,
-select {
-  width: 100%;
-  padding: 10px 12px;
-  margin-top: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-}
-
-.submit-btn {
-  margin-top: 20px;
-  width: 100%;
-  padding: 12px;
-  background: #0050b3;
+.hero h1 {
+  margin: 10px 0 0 0;
+  font-size: 2rem;
+  font-weight: bold;
   color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
+  z-index: 2;
 }
 
-.submit-btn:hover {
-  background: #003d8a;
+.hero p {
+  margin: 6px 0 0 0;
+  font-size: 1.1rem;
+  color: white;
+  opacity: 0.9;
+  z-index: 2;
 }
 
-/* ----------------------------------------------------
-   DIMENSIONS GRID
----------------------------------------------------- */
-.dimension-item {
-  margin-top: 10px;
-}
-
-/* ----------------------------------------------------
-   RESULT CARD
----------------------------------------------------- */
-.result-card {
-  max-width: 640px;
-  margin: 20px auto 40px auto;
-  background: white;
+/* ===============================
+   FORM WRAPPER
+=============================== */
+.form-wrapper {
+  max-width: 900px;
+  margin: 25px auto;
+  padding: 25px;
+  background: #fff;
   border-radius: 12px;
-  padding: 20px 24px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
-/* Do NOT hide empty content — this caused the flicker bug */
-/* #resultContent:empty { display:none; } */
-
-.result-meta {
-  font-size: 0.9rem;
-  color: #444;
-  margin-bottom: 12px;
-}
-
-/* ----------------------------------------------------
-   VERDICT PILLS
----------------------------------------------------- */
-.verdict-pill {
-  padding: 12px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-  margin-bottom: 18px;
-  font-size: 1.05rem;
-}
-
-.verdict-allowed {
-  background: #e8f8f0;
-  color: #0e7a4f;
-}
-
-.verdict-refused {
-  background: #fde8e8;
-  color: #b42318;
-}
-
-.verdict-uncertain {
-  background: #fff7e6;
-  color: #8a6100;
-}
-
-/* ----------------------------------------------------
-   SENSITIVITY BANNER
----------------------------------------------------- */
-.sensitivity-banner {
-  background: #fff4cc;
-  border-left: 4px solid #e6b800;
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  border-radius: 6px;
+.form-card label {
+  display: block;
+  margin-top: 14px;
+  font-weight: bold;
   font-size: 0.95rem;
 }
 
-/* ----------------------------------------------------
-   SPINNER
----------------------------------------------------- */
+input, select {
+  width: 100%;
+  padding: 11px;
+  margin-top: 4px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* ===============================
+   SUBMIT BUTTON
+=============================== */
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  background: #1E3A8A;
+  color: white;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 25px;
+}
+
+.submit-btn:hover {
+  background: #162f6b;
+}
+
+/* ===============================
+   RESULT CARD
+=============================== */
+.result-card {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.09);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ===============================
+   VERDICT PILL STYLES
+=============================== */
+.verdict-pill {
+  display: inline-block;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.verdict-allowed {
+  background: #d9f3d9;
+  color: #1b6e1b;
+}
+
+.verdict-refused {
+  background: #f6d2d2;
+  color: #a80000;
+}
+
+.verdict-uncertain {
+  background: #fff3cd;
+  color: #8a6d00;
+}
+
+/* ===============================
+   SENSITIVITY BANNER
+=============================== */
+.sensitivity-warning {
+  background: #fff3cd;
+  padding: 12px 16px;
+  border-left: 4px solid #c99700;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+/* ===============================
+   BULLET LIST
+=============================== */
+.result-card ul {
+  padding-left: 20px;
+  margin-top: 12px;
+}
+
+.result-card li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* ===============================
+   SPINNER (LOADER)
+=============================== */
 .spinner {
-  width: 40px;
-  height: 40px;
-  margin: 10px auto;
+  width: 70px;
+  height: 20px;
+  margin: 15px auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+.spinner div {
+  width: 12px;
+  height: 12px;
+  background: #1E3A8A;
   border-radius: 50%;
-  border: 4px solid #ccc;
-  border-top-color: #0050b3;
-  animation: spin 0.9s linear infinite;
+  animation: bounce 0.6s infinite alternate;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.spinner div:nth-child(2) { animation-delay: 0.15s; }
+.spinner div:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes bounce {
+  from { transform: translateY(0); opacity: 0.5; }
+  to { transform: translateY(-7px); opacity: 1; }
 }
 
-/* ----------------------------------------------------
-   FADE IN
----------------------------------------------------- */
+/* ===============================
+   FADE-IN ANIMATION
+=============================== */
 .fade-in {
+  opacity: 0;
   animation: fadeIn 0.35s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; }
 }
 
-/* ----------------------------------------------------
-   DISCLAIMER
----------------------------------------------------- */
-.disclaimer {
-  font-size: 0.85rem;
-  opacity: 0.85;
-  margin-top: 20px;
-}
-
-/* ----------------------------------------------------
+/* ===============================
    FOOTER
----------------------------------------------------- */
+=============================== */
 footer {
   text-align: center;
   padding: 20px 0;
