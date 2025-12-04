@@ -1,26 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Walker Planning – Permitted Development Checker</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-<!-- =============================
-     HERO HEADER
-============================== -->
-<header class="hero">
-  <img src="logo.png" alt="Walker Planning Logo" class="hero-logo">
-  <h1>Walker Planning</h1>
-  <p>Instant Permitted Development Feasibility (AI-powered)</p>
+<!-- ======================================================
+     STICKY OVERLAY HEADER (B2)
+====================================================== -->
+<header class="top-banner">
+  <div class="banner-inner">
+    <img src="logo.png" alt="Walker Planning Logo" class="banner-logo">
+    <div class="banner-title">Walker Planning</div>
+  </div>
 </header>
 
-<!-- =============================
-     MAIN FORM WRAPPER
-============================== -->
+<!-- ======================================================
+     HERO SECTION
+====================================================== -->
+<section class="hero">
+  <div class="hero-overlay">
+    <h1>Instant Permitted Development Check</h1>
+    <p>AI-powered guidance for UK homeowners</p>
+  </div>
+</section>
+
+<!-- ======================================================
+     FORM WRAPPER
+====================================================== -->
 <div class="form-wrapper">
   <form id="planningForm" class="form-card">
 
@@ -56,7 +67,7 @@
       <option>Garden room</option>
     </select>
 
-    <!-- Dynamic dimension fields -->
+    <!-- Dynamic fields go here -->
     <div id="dimensionFields"></div>
 
     <label for="constraints">Constraints *</label>
@@ -69,17 +80,15 @@
     </select>
 
     <button type="submit" class="submit-btn">Run Feasibility Check</button>
-
   </form>
 </div>
 
-<!-- =============================
+<!-- ======================================================
      RESULT CARD
-============================== -->
+====================================================== -->
 <div id="resultCard" class="result-card hidden">
   <h2>Your Planning Feasibility Result</h2>
 
-  <!-- Correct 3-dot loader -->
   <div id="spinner" class="spinner hidden">
     <div></div><div></div><div></div>
   </div>
@@ -87,13 +96,10 @@
   <div id="resultContent"></div>
 </div>
 
-<!-- =============================
-     FOOTER
-============================== -->
 <footer>
   © Walker Planning · Scotland · 2025
 </footer>
 
-<script src="script.js"></script>
+<script src="script.js?v=3"></script>
 </body>
 </html>
