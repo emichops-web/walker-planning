@@ -108,9 +108,18 @@ function renderDimensionFields(projectType) {
 renderDimensionFields(projectTypeSelect.value);
 
 /* Update fields when project type changes */
+let lastProjectValue = projectTypeSelect.value;
+
 projectTypeSelect.addEventListener("change", () => {
-  if (resultLocked) return;
-  renderDimensionFields(projectTypeSelect.value);
+  const current = projectTypeSelect.value;
+
+  // Do NOTHING if:
+  //  1. results are locked
+  //  2. the value didn't actually change
+  if (resultLocked || current === lastProjectValue) return;
+
+  lastProjectValue = current;
+  renderDimensionFields(current);
 });
 
 /* ============================================================
