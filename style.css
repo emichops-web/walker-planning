@@ -293,3 +293,52 @@ input:focus, select:focus {
 .result-card p {
   margin-bottom: 14px;
 }
+/* Local authority label styling */
+.la-label {
+  background: #eef3ff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: #2d3e76;
+  display: inline-block;
+}
+
+/* Risk banner (inside result card) */
+.risk-banner {
+  background: #fff4d6;
+  border-left: 4px solid #e1a000;
+  padding: 12px;
+  margin: 10px 0 20px 0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #6a5200;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Fade-in animation for results */
+.fade-in {
+  animation: fadeIn 0.35s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Error message style */
+.error-msg {
+  color: red;
+  text-align: center;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+/* Spacing improvement for verdict + summary */
+.result-card p,
+.result-card ul {
+  margin-bottom: 12px;
+}
