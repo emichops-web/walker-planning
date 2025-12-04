@@ -1,6 +1,6 @@
-/* =======================================================
-   PROJECT TYPE → DIMENSION RULES
-======================================================= */
+/* -------------------------------
+  PROJECT TYPE → DIMENSION RULES
+------------------------------- */
 const dimensionRules = {
   "Rear extension": ["projection", "height", "boundaryDistance"],
   "Side extension": ["width", "height", "boundaryDistance"],
@@ -16,158 +16,99 @@ const dimensionRules = {
   "Garage conversion": [],
   "Windows / doors": [],
   "Solar panels": ["projection"],
-  "Fencing / gates": ["height"],
-  "Garden room": ["projection", "height", "boundaryDistance"]
+  "Fencing / gates": ["height"]
 };
 
-/* =======================================================
-   DOM ELEMENTS
-======================================================= */
+/* DOM ELEMENTS */
 const projectTypeSelect = document.getElementById("projectType");
 const dimensionFieldsContainer = document.getElementById("dimensionFields");
 const form = document.getElementById("planningForm");
 const resultCard = document.getElementById("resultCard");
-const spinner = document.getElementById("spinner");
 const resultContent = document.getElementById("resultContent");
+const spinner = document.getElementById("spinner");
 
-/* =======================================================
-   POSTCODE VALIDATION
-======================================================= */
-function isValidPostcode(pc) {
-  const regex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i;
-  return regex.test(pc.trim());
-}
-
-/* =======================================================
-   DYNAMIC DIMENSION FIELD RENDERING
-======================================================= */
-function renderDimensionFields(projectType) {
-  const fields = dimensionRules[projectType] || [];
+/* RENDER DIMENSION FIELDS */
+function renderDimensionFields(type) {
+  const fields = dimensionRules[type] || [];
   dimensionFieldsContainer.innerHTML = "";
 
   fields.forEach(field => {
     let label = "";
-    let placeholder = "e.g., 2.5";
+    let placeholder = "";
 
     switch (field) {
-      case "projection": label = "Projection (m) *"; break;
-      case "width": label = "Width (m) *"; break;
-      case "height": label = "Height (m) *"; break;
-      case "boundaryDistance": label = "Distance to nearest boundary (m) *"; break;
-      case "dormerVolume": label = "Dormer volume (m³) *"; break;
-      case "newRidge": label = "New ridge height (m) *"; break;
-      case "footprint": label = "Footprint (m²) *"; break;
-      default: label = field;
+      case "projection": label = "Projection (m) *"; placeholder = "e.g., 3"; break;
+      case "width": label = "Width (m) *"; placeholder = "e.g., 2.5"; break;
+      case "height": label = "Height (m) *"; placeholder = "e.g., 3"; break;
+      case "boundaryDistance": label = "Distance to boundary (m) *"; placeholder = "e.g., 2"; break;
+      case "dormerVolume": label = "Dormer volume (m³) *"; placeholder = "e.g., 40"; break;
+      case "newRidge": label = "New ridge height (m) *"; placeholder = "e.g., 6.2"; break;
+      case "footprint": label = "Footprint (m²) *"; placeholder = "e.g., 25"; break;
     }
 
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("dimension-item");
+    const el = document.createElement("div");
+    el.classList.add("dimension-item");
 
-    wrapper.innerHTML = `
+    el.innerHTML = `
       <label>${label}</label>
       <input type="number" step="0.1" id="${field}" placeholder="${placeholder}" required>
     `;
 
-    dimensionFieldsContainer.appendChild(wrapper);
+    dimensionFieldsContainer.appendChild(el);
   });
 }
 
-// Initial render
 renderDimensionFields(projectTypeSelect.value);
-
-// Update dimensions when project type changes
 projectTypeSelect.addEventListener("change", () => {
   renderDimensionFields(projectTypeSelect.value);
 });
 
-/* =======================================================
-   BULLET-PROOF AUTOSCROLL (never fails)
-======================================================= */
+/* -------------------------------
+  AUTO SCROLL FUNCTION
+------------------------------- */
 function scrollToResults() {
-  const header = document.querySelector(".top-banner");
-  const headerHeight = header ? header.offsetHeight : 0;
-
-  const targetY =
-    resultCard.getBoundingClientRect().top +
-    window.scrollY -
-    headerHeight -
-    10;
-
-  function doScroll() {
-    window.scrollTo({ top: targetY, behavior: "smooth" });
-  }
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      doScroll();
-      setTimeout(doScroll, 120);
-      setTimeout(doScroll, 260);
-    });
-  });
+  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/* =======================================================
-   FORM SUBMIT HANDLER
-======================================================= */
+/* -------------------------------
+  SUBMIT HANDLER
+------------------------------- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const postcode = document.getElementById("postcode").value.trim().toUpperCase();
-
-  // Validate postcode
-  if (!isValidPostcode(postcode)) {
-    resultCard.classList.remove("hidden");
-    spinner.classList.add("hidden");
-    resultContent.innerHTML = `
-      <p style="color:red;text-align:center;">
-        Please enter a valid UK postcode (e.g., PH7 4BL).
-      </p>
-    `;
-    scrollToResults();
-    return;
-  }
-
-  // Show result area + loader
+  /* SHOW LOADER */
   resultCard.classList.remove("hidden");
   resultContent.innerHTML = "";
   spinner.classList.remove("hidden");
 
-  // SCROLL NOW — to show loader immediately
-  scrollToResults();
+  scrollToResults(); // now scroll immediately when loader appears
 
-  // Build payload
+  /* BUILD PAYLOAD */
   const payload = {
-    postcode,
+    postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value.trim(),
     projectType: document.getElementById("projectType").value.trim(),
     constraints: document.getElementById("constraints").value.trim(),
+    projectDescription: document.getElementById("projectDescription").value.trim(),
     dimensions: {}
   };
 
-  // Validate dynamic dimensions
   const rules = dimensionRules[payload.projectType] || [];
-  for (const field of rules) {
-    const el = document.getElementById(field);
+  for (const r of rules) {
+    const el = document.getElementById(r);
     if (!el || !el.value.trim()) {
       spinner.classList.add("hidden");
-      resultContent.innerHTML = `
-        <p style='color:red;text-align:center'>
-          Please complete all required dimensions.
-        </p>
-      `;
-      scrollToResults();
+      resultContent.innerHTML = "<p style='color:red'>Missing required dimensions.</p>";
       return;
     }
-    payload.dimensions[field] = el.value.trim();
+    payload.dimensions[r] = el.value.trim();
   }
 
-  /* =======================================================
-     SEND TO WORKER
-  ======================================================== */
+  /* SEND TO WORKER */
   try {
     const res = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify(payload)
     });
 
@@ -176,50 +117,22 @@ form.addEventListener("submit", async (e) => {
 
     if (data.error) {
       resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
-      scrollToResults();
       return;
     }
 
-    // Safe extracted fields
-    const conclusion = data.conclusion_html || "";
-    const summary = data.summary_html || "";
-    const details = data.details_html || "";
-    const authority = data.localAuthority || "Unknown local authority";
-
-    const warning = data.autoConstraints && data.autoConstraints !== "None"
-      ? `<div class="sensitivity-warning fade-in">
-           ⚠ This postcode appears within a designated or sensitive planning area.
-         </div>`
-      : "";
-
-    const authorityBlock = `
-      <p style="font-size:0.95rem; opacity:0.9; margin-bottom:10px;">
-        <strong>Local Authority:</strong> ${authority}
-      </p>
-    `;
-
-    // Render full results
+    /* DISPLAY AI RESULT */
     resultContent.innerHTML = `
-      ${warning}
-      ${authorityBlock}
       <div class="fade-in">
-        ${conclusion}
-        ${summary}
-        ${details}
-        <p class="disclaimer" style="margin-top:20px; font-size:0.9rem; opacity:0.9;">
-          <strong>Disclaimer:</strong> This tool provides an automated overview.
-          Always confirm findings with your local authority or a qualified planning consultant.
-        </p>
+        ${data.conclusion_html || ""}
+        ${data.summary_html || ""}
+        ${data.details_html || ""}
       </div>
     `;
 
-    // SCROLL AGAIN — when results appear
-    scrollToResults();
+    scrollToResults(); // scroll again after content is ready
 
   } catch (err) {
     spinner.classList.add("hidden");
-    resultContent.innerHTML =
-      `<p style="color:red">Error: ${err.message}</p>`;
-    scrollToResults();
+    resultContent.innerHTML = `<p style="color:red">Request failed: ${err.message}</p>`;
   }
 });
