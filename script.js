@@ -2,11 +2,11 @@
   PROJECT TYPE → DIMENSION RULES
 ------------------------------- */
 const dimensionRules = {
-  "Rear extension": ["projection", "height", "boundary"],
-  "Side extension": ["width", "height", "boundary"],
+  "Rear extension": ["projection", "height", "boundaryDistance"],
+  "Side extension": ["width", "height", "boundaryDistance"],
   "Wrap-around extension": ["projection", "width", "height"],
   "Porch / front extension": ["projection", "height"],
-  "Two-storey extension": ["projection", "height", "boundary"],
+  "Two-storey extension": ["projection", "height", "boundaryDistance"],
   "Loft dormer extension": ["dormerVolume", "height"],
   "Hip-to-gable roof extension": ["height"],
   "Roof lights": ["projection"],
@@ -35,10 +35,6 @@ function renderDimensionFields(projectType) {
   const fields = dimensionRules[projectType] || [];
   dimensionFieldsContainer.innerHTML = "";
 
-  if (fields.length === 0) {
-    return; // No dimension inputs required
-  }
-
   fields.forEach(field => {
     let label = "";
     let placeholder = "";
@@ -57,7 +53,7 @@ function renderDimensionFields(projectType) {
         label = "Height (m) *";
         placeholder = "e.g., 3";
         break;
-      case "boundary":
+      case "boundaryDistance":
         label = "Distance to nearest boundary (m) *";
         placeholder = "e.g., 2";
         break;
@@ -89,21 +85,22 @@ function renderDimensionFields(projectType) {
   });
 }
 
-/* Update fields on load (default selection) */
+/* Update fields on load */
 renderDimensionFields(projectTypeSelect.value);
 
-/* Update fields when project type changes */
+/* Update fields when project changes */
 projectTypeSelect.addEventListener("change", () => {
   renderDimensionFields(projectTypeSelect.value);
 });
 
+
 /* -------------------------------
-    FORM SUBMISSION HANDLER
+    SUBMIT HANDLER
 ------------------------------- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Show result card + loader animation
+  // Show loader
   resultCard.classList.remove("hidden");
   resultContent.innerHTML = `
     <div class="loader">
@@ -112,8 +109,7 @@ form.addEventListener("submit", async (e) => {
     <p style="text-align:center;color:#666;margin-top:8px;">Analysing your project…</p>
   `;
 
-  // Auto-scroll to results
-  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  resultCard.scrollIntoView({ behavior: "smooth" });
 
   // Build payload
   const payload = {
@@ -124,16 +120,20 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
+  // Add dynamic fields
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
     if (!el || !el.value.trim()) {
-      resultContent.innerHTML = `<p style='color:red;text-align:center'>Missing required dimensions.</p>`;
+      resultContent.innerHTML = "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
       return;
     }
     payload.dimensions[field] = el.value.trim();
   }
 
+  /* ---------------------------
+      SEND TO WORKER
+  ----------------------------*/
   try {
     const res = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
       method: "POST",
@@ -144,18 +144,16 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (data.error) {
-      resultContent.innerHTML = `
-        <p style="color:#c00;font-weight:600">${data.error}</p>
-      `;
+      resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
       return;
     }
 
-    // Insert AI HTML with smooth fade-in
+    // SUCCESS — AI Output
     resultContent.innerHTML = `
       <div class="fade-in">
-        ${data.conclusion_html}
-        ${data.summary_html}
-        ${data.details_html}
+        ${data.conclusion_html || ""}
+        ${data.summary_html || ""}
+        ${data.details_html || ""}
         <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
           <strong>Disclaimer:</strong> This tool provides an automated general overview.
           Planning rules vary locally — always confirm with your local authority or a qualified planning consultant.
@@ -164,36 +162,6 @@ form.addEventListener("submit", async (e) => {
     `;
 
   } catch (err) {
-    resultContent.innerHTML = `<p style="color:#c00">Request failed: ${err.message}</p>`;
-  }
-});
-
-  // SEND TO WORKER
-  try {
-    const res = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-
-    if (data.error) {
-      resultContent.innerHTML = `<span style="color:red">Server error: ${data.error}</span>`;
-      return;
-    }
-
-    // Build HTML
-    const html = `
-      ${data.conclusion_html || ""}
-      ${data.summary_html || ""}
-      ${data.details_html || ""}
-      <p style="margin-top:20px;"><strong>Disclaimer:</strong> This tool provides an automated general overview. Planning rules vary locally. Always consult your local planning authority or a qualified planning consultant before starting work.</p>
-    `;
-
-    resultContent.innerHTML = html;
-
-  } catch (err) {
-    resultContent.innerHTML = `<span style="color:red">Request failed: ${err.message}</span>`;
+    resultContent.innerHTML = `<p style="color:red">Request failed: ${err.message}</p>`;
   }
 });
