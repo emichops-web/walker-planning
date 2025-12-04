@@ -103,11 +103,19 @@ projectTypeSelect.addEventListener("change", () => {
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Show analysing text
-  resultContent.innerHTML = "Analysing…";
+  // Show result card + loader animation
   resultCard.classList.remove("hidden");
+  resultContent.innerHTML = `
+    <div class="loader">
+      <div></div><div></div><div></div>
+    </div>
+    <p style="text-align:center;color:#666;margin-top:8px;">Analysing your project…</p>
+  `;
 
-  // Collect base fields
+  // Auto-scroll to results
+  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // Build payload
   const payload = {
     postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value.trim(),
@@ -116,16 +124,49 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
-  // Collect dynamic dimension fields
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
-    if (!el || !el.value) {
-      resultContent.innerHTML = "<span style='color:red'>Missing required fields.</span>";
+    if (!el || !el.value.trim()) {
+      resultContent.innerHTML = `<p style='color:red;text-align:center'>Missing required dimensions.</p>`;
       return;
     }
     payload.dimensions[field] = el.value.trim();
   }
+
+  try {
+    const res = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      resultContent.innerHTML = `
+        <p style="color:#c00;font-weight:600">${data.error}</p>
+      `;
+      return;
+    }
+
+    // Insert AI HTML with smooth fade-in
+    resultContent.innerHTML = `
+      <div class="fade-in">
+        ${data.conclusion_html}
+        ${data.summary_html}
+        ${data.details_html}
+        <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
+          <strong>Disclaimer:</strong> This tool provides an automated general overview.
+          Planning rules vary locally — always confirm with your local authority or a qualified planning consultant.
+        </p>
+      </div>
+    `;
+
+  } catch (err) {
+    resultContent.innerHTML = `<p style="color:#c00">Request failed: ${err.message}</p>`;
+  }
+});
 
   // SEND TO WORKER
   try {
