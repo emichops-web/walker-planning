@@ -175,6 +175,7 @@ form.addEventListener("submit", async (e) => {
       resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
       return;
     }
+     resultLocked = true;
 
     // Mark results as locked (prevent UI reset)
     resultLocked = true;
