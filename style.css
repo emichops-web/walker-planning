@@ -252,6 +252,34 @@ input:focus, select:focus {
   color: #555;
 }
 
+/* Verdict pill styling */
+.verdict-pill {
+  padding: 14px 22px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.verdict-allowed {
+  background: #d8f3dc;
+  color: #1b4332;
+  border: 1px solid #95d5b2;
+}
+
+.verdict-refused {
+  background: #fde2e1;
+  color: #7f1d1d;
+  border: 1px solid #f5b5b2;
+}
+
+.verdict-uncertain {
+  background: #fff4cc;
+  color: #7c5e00;
+  border: 1px solid #f0d88c;
+}
+
 .result-card p {
   margin-bottom: 14px;
 }
