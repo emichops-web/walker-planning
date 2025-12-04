@@ -1,163 +1,175 @@
-/* Reset */
-* {
+/* ----------------------------------------------------
+   GLOBAL
+---------------------------------------------------- */
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
-body {
-  background: #f6f7f9;
+  background: #f7f7f7;
   color: #333;
-  line-height: 1.5;
 }
 
-/* Sticky Header */
-.site-header {
+.hidden {
+  display: none;   /* ← the ONLY correct version */
+}
+
+/* ----------------------------------------------------
+   HERO / HEADER
+---------------------------------------------------- */
+header.hero {
+  position: relative;
   width: 100%;
-  position: sticky;
-  top: 0;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  z-index: 500;
-  padding: 10px 20px;
+  height: 260px;
+  overflow: hidden;
 }
 
-.header-inner {
-  display: flex;
-  align-items: center;
-}
-
-.header-logo {
-  width: 165px;
-  height: auto;
-}
-
-/* Hero Section */
-.hero {
+.hero-img {
   width: 100%;
-  background: url('hero.png') center/cover no-repeat;
-  height: 300px;
-  padding-top: 80px;
-  text-align: center;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
   color: white;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
 }
 
-.hero h1 {
-  font-size: 2rem;
+.hero-logo {
+  width: 140px;
   margin-bottom: 10px;
 }
 
-.hero p {
-  font-size: 1.2rem;
-  opacity: 0.95;
-}
-
-/* Form Wrapper */
+/* ----------------------------------------------------
+   FORM
+---------------------------------------------------- */
 .form-wrapper {
-  max-width: 900px;
-  margin: -40px auto 40px;
-  padding: 10px;
+  display: flex;
+  justify-content: center;
+  margin-top: -40px;
+  padding: 0 15px;
 }
 
 .form-card {
   background: white;
-  padding: 30px;
+  padding: 20px 24px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.section-title {
-  margin: 25px 0 10px;
-  font-size: 1.3rem;
-  font-weight: bold;
-  color: #222;
-}
-
-/* Layout grids */
-.two-col,
-.three-col {
-  display: grid;
-  gap: 20px;
-}
-
-.two-col {
-  grid-template-columns: 1fr 1fr;
-}
-
-.three-col {
-  grid-template-columns: 1fr 1fr 1fr;
-}
-
-@media (max-width: 780px) {
-  .two-col,
-  .three-col {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Inputs */
-label {
-  display: block;
-  font-size: 0.95rem;
-  font-weight: bold;
-  margin-bottom: 6px;
-}
-
-input, select {
   width: 100%;
-  padding: 12px;
-  border-radius: 8px;
+  max-width: 520px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+label {
+  font-weight: 600;
+  display: block;
+  margin-top: 16px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 1rem;
 }
 
-input:focus, select:focus {
-  border-color: #1e4a92;
-  outline: none;
-  box-shadow: 0 0 4px rgba(30,74,146,0.4);
-}
-
-/* Submit button */
 .submit-btn {
-  margin-top: 25px;
+  margin-top: 20px;
   width: 100%;
-  padding: 14px;
-  background: #1e3f8c;
+  padding: 12px;
+  background: #0050b3;
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
-}
-
-.submit-btn:hover {
-  background: #16306b;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
-/* Result card */
+.submit-btn:hover {
+  background: #003d8a;
+}
+
+/* ----------------------------------------------------
+   DIMENSIONS GRID
+---------------------------------------------------- */
+.dimension-item {
+  margin-top: 10px;
+}
+
+/* ----------------------------------------------------
+   RESULT CARD
+---------------------------------------------------- */
 .result-card {
-  max-width: 900px;
-  margin: 20px auto 60px;
+  max-width: 640px;
+  margin: 20px auto 40px auto;
   background: white;
-  padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 20px 24px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
 }
 
-.hidden {
-  display: none;
+/* Do NOT hide empty content — this caused the flicker bug */
+/* #resultContent:empty { display:none; } */
+
+.result-meta {
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 12px;
 }
 
-/* Spinner */
+/* ----------------------------------------------------
+   VERDICT PILLS
+---------------------------------------------------- */
+.verdict-pill {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  font-size: 1.05rem;
+}
+
+.verdict-allowed {
+  background: #e8f8f0;
+  color: #0e7a4f;
+}
+
+.verdict-refused {
+  background: #fde8e8;
+  color: #b42318;
+}
+
+.verdict-uncertain {
+  background: #fff7e6;
+  color: #8a6100;
+}
+
+/* ----------------------------------------------------
+   SENSITIVITY BANNER
+---------------------------------------------------- */
+.sensitivity-banner {
+  background: #fff4cc;
+  border-left: 4px solid #e6b800;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* ----------------------------------------------------
+   SPINNER
+---------------------------------------------------- */
 .spinner {
-  width: 28px;
-  height: 28px;
-  border: 4px solid #ddd;
-  border-top-color: #1e3f8c;
+  width: 40px;
+  height: 40px;
+  margin: 10px auto;
   border-radius: 50%;
-  margin: 15px auto;
+  border: 4px solid #ccc;
+  border-top-color: #0050b3;
   animation: spin 0.9s linear infinite;
 }
 
@@ -165,181 +177,33 @@ input:focus, select:focus {
   to { transform: rotate(360deg); }
 }
 
-.disclaimer {
-  margin-top: 20px;
-  font-size: 0.9rem;
-  opacity: 0.75;
-}
-/* ---------------------------
-   LOADER ANIMATION
-----------------------------*/
-.loader {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin: 15px 0;
-}
-
-.loader div {
-  width: 8px;
-  height: 8px;
-  background: #1e3f8c;
-  border-radius: 50%;
-  animation: pulse 0.6s infinite alternate;
-}
-
-.loader div:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.loader div:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes pulse {
-  from { transform: scale(0.6); opacity: 0.4; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
-/* fade-in for results */
+/* ----------------------------------------------------
+   FADE IN
+---------------------------------------------------- */
 .fade-in {
-  animation: fadeIn 0.6s ease forwards;
-  opacity: 0;
+  animation: fadeIn 0.35s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  to { opacity: 1; }
-}
-/* ------------------------------
-   Improved Result Styling
------------------------------- */
-
-.result-card {
-  padding: 30px 35px;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
-  margin-top: 40px;
-  line-height: 1.6;
-}
-
-.result-card h2 {
-  margin-bottom: 18px;
-  font-size: 1.8rem;
-}
-
-.result-card h3 {
-  margin-bottom: 12px;
-  font-size: 1.4rem;
-  font-weight: 600;
-}
-
-.result-card ul {
-  margin: 20px 0;
-  padding-left: 22px;
-}
-
-.result-card li {
-  margin-bottom: 8px;
-}
-
-.result-card .disclaimer {
-  margin-top: 25px;
-  padding: 14px 18px;
-  background: #f7f7f7;
-  border-left: 4px solid #d0d0d0;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-/* Verdict pill styling */
-.verdict-pill {
-  padding: 14px 22px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  display: inline-block;
-}
-
-.verdict-allowed {
-  background: #d8f3dc;
-  color: #1b4332;
-  border: 1px solid #95d5b2;
-}
-
-.verdict-refused {
-  background: #fde2e1;
-  color: #7f1d1d;
-  border: 1px solid #f5b5b2;
-}
-
-.verdict-uncertain {
-  background: #fff4cc;
-  color: #7c5e00;
-  border: 1px solid #f0d88c;
-}
-
-.la-label {
-  background: #eef3ff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  font-size: 0.9rem;
-  color: #2d3e76;
-  display: inline-block;
-}
-
-.result-card p {
-  margin-bottom: 14px;
-}
-/* Local authority label styling */
-.la-label {
-  background: #eef3ff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  font-size: 0.9rem;
-  color: #2d3e76;
-  display: inline-block;
-}
-
-/* Risk banner (inside result card) */
-.risk-banner {
-  background: #fff4d6;
-  border-left: 4px solid #e1a000;
-  padding: 12px;
-  margin: 10px 0 20px 0;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  color: #6a5200;
-}
-
-.hidden {
-  display: none !important;
-}
-
-/* Fade-in animation for results */
-.fade-in {
-  animation: fadeIn 0.35s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Error message style */
-.error-msg {
-  color: red;
+/* ----------------------------------------------------
+   DISCLAIMER
+---------------------------------------------------- */
+.disclaimer {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-top: 20px;
+}
+
+/* ----------------------------------------------------
+   FOOTER
+---------------------------------------------------- */
+footer {
   text-align: center;
-  margin-top: 10px;
-  font-weight: 500;
+  padding: 20px 0;
+  color: #777;
+  font-size: 0.9rem;
 }
-
-/* Spacing improvement for verdict + summary */
-.result-card p,
-.result-card ul {
-  margin-bottom: 12px;
-}
-
