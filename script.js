@@ -187,6 +187,20 @@ form.addEventListener("submit", async (e) => {
       resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
       return;
     }
+    
+    // STEP 4: Auto-fill constraints into dropdown
+if (data.autoConstraints && data.autoConstraints !== "None") {
+  document.getElementById("constraints").value = data.autoConstraints;
+}
+
+// STEP 4: Show Local Authority label above results
+if (data.localAuthority) {
+  resultContent.innerHTML = `
+    <p class="la-label">
+      Local authority: <strong>${data.localAuthority}</strong>
+    </p>
+  ` + resultContent.innerHTML;
+}
 
     // SUCCESS — AI Output
     resultContent.innerHTML = `
