@@ -1,44 +1,50 @@
-/* =========================================================
-   BASE PAGE
-========================================================= */
-body {
-  font-family: "Inter", sans-serif;
+/* ----------------------------------------------------
+   GLOBAL RESET
+---------------------------------------------------- */
+* {
   margin: 0;
   padding: 0;
-  background: #f5f5f5;
-  color: #222;
-  padding-top: 70px; /* Make room for sticky header */
+  box-sizing: border-box;
 }
 
-/* =========================================================
-   STICKY HEADER — FINAL WORKING VERSION
-========================================================= */
-.sticky-header {
+body {
+  font-family: "Inter", sans-serif;
+  background: #f7f7f7;
+  color: #222;
+  line-height: 1.5;
+}
+
+/* ----------------------------------------------------
+   STICKY HEADER
+---------------------------------------------------- */
+header.sticky-header {
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
   height: 70px;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  z-index: 999;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 0 24px;
+  z-index: 50;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
-.sticky-header img {
-  height: 48px;
+header.sticky-header img {
+  height: 46px;   /* 50% larger */
   width: auto;
 }
 
-/* =========================================================
-   HERO SECTION — RESTORED GOOD VERSION
-========================================================= */
+/* ----------------------------------------------------
+   HERO SECTION
+---------------------------------------------------- */
 .hero {
+  margin-top: 70px; /* compensate for sticky header */
   position: relative;
   width: 100%;
-  height: 30vh;
+  height: 35vh; /* reduced height */
   overflow: hidden;
 }
 
@@ -46,179 +52,189 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0.75;
 }
 
-.hero-text {
+.hero .hero-text {
   position: absolute;
-  bottom: 30px;
-  right: 40px;
-  text-align: right;
-  color: white;
-  text-shadow: 0px 2px 10px rgba(0,0,0,0.5);
+  right: 5%;
+  bottom: 10%;
+  background: rgba(255,255,255,0.72);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
-.hero-text h1 {
-  font-size: 2rem;
-  margin: 0;
-}
-
-.hero-text p {
-  font-size: 1rem;
-  opacity: 0.9;
-  margin-top: 6px;
-}
-
-/* =========================================================
-   FORM LAYOUT
-========================================================= */
+/* ----------------------------------------------------
+   FORM / CONTAINER WRAPPER (900px max-width)
+---------------------------------------------------- */
 .form-wrapper {
   max-width: 900px;
   margin: 40px auto;
-  padding: 20px;
+  padding: 0 24px; /* match result card */
 }
 
 .form-card {
-  background: white;
-  padding: 32px;
-  border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 24px 32px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
 }
 
-label {
+/* Labels */
+.form-card label {
   display: block;
-  margin-bottom: 6px;
+  margin: 18px 0 6px;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
-input,
-select,
-textarea {
+/* Dropdowns & inputs */
+.form-card select,
+.form-card input,
+.form-card textarea {
   width: 100%;
-  padding: 12px;
+  padding: 12px 14px;
   border-radius: 8px;
   border: 1px solid #ccc;
-  margin-bottom: 18px;
   font-size: 1rem;
-  box-sizing: border-box;
+  background: white;
+  margin-bottom: 6px;
 }
 
-/* Description box */
+/* Multi-line project description */
 textarea {
-  height: 130px;
+  height: 120px;
   resize: vertical;
-  font-family: inherit;
-  font-size: 1rem;
 }
 
-/* =========================================================
-   PRIMARY BUTTON
-========================================================= */
+/* Submit button */
 .submit-btn {
   width: 100%;
-  background: #244a9a;
+  margin-top: 20px;
+  background: #0066ff;
   color: white;
-  padding: 15px;
+  padding: 14px;
   border: none;
-  font-size: 1.15rem;
   border-radius: 10px;
-  font-weight: 600;
+  font-size: 1.1rem;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 .submit-btn:hover {
-  background: #1d3e82;
+  background: #004fcc;
 }
 
-/* =========================================================
-   RESULT CARD — FIXED WIDTH + CLEAN LOOK
-========================================================= */
+/* ----------------------------------------------------
+   RESULT CARD (MATCHING 900PX WIDTH)
+---------------------------------------------------- */
 .result-card {
-  max-width: 900px;        /* Match form width */
-  margin: 40px auto;        /* Center it */
-  padding: 40px;
-  background: #ffffff;
+  max-width: 900px;
+  width: 100%;
+  margin: 40px auto;
+  padding: 24px 24px 32px; /* MATCHES form */
+  background: #fff;
   border-radius: 16px;
   box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.hidden {
-  display: none !important;
+#resultContent {
+  margin-top: 12px;
+  font-size: 1rem;
 }
 
-/* Verdict pill */
+.fade-in {
+  animation: fadeIn 0.45s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ----------------------------------------------------
+   VERDICT PILL STYLING
+---------------------------------------------------- */
 .verdict-pill {
-  padding: 12px 20px;
-  border-radius: 10px;
   font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 8px;
   display: inline-block;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
 }
 
 .verdict-allowed {
-  background: #d9f4da;
-  color: #0a5d2a;
+  background: #e6f7ea;
+  color: #147a3c;
+  border-left: 6px solid #1fa34a;
 }
 
 .verdict-refused {
-  background: #ffd7d7;
-  color: #932323;
+  background: #fdecea;
+  color: #b51e1e;
+  border-left: 6px solid #d64545;
 }
 
 .verdict-uncertain {
-  background: #ffeecc;
-  color: #6f5200;
+  background: #fff7e6;
+  color: #a87400;
+  border-left: 6px solid #e4b400;
 }
 
-/* =========================================================
-   🔵 3-DOT LOADER — FIXED (HORIZONTAL + SMOOTH)
-========================================================= */
+/* ----------------------------------------------------
+   3-DOT LOADER (horizontal)
+---------------------------------------------------- */
 #spinner {
-  margin: 20px 0;
-  display: flex;
-  justify-content: center;
-}
-
-.loader {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 18px;
 }
 
-.loader div {
-  width: 12px;
-  height: 12px;
-  background-color: #244a9a;
+#spinner div {
+  width: 10px;
+  height: 10px;
+  margin: 0 4px;
+  background: #666;
   border-radius: 50%;
-  margin: 0 6px;
-  animation: dotBounce 0.6s infinite alternate ease-in-out;
+  animation: bounceDots 0.8s infinite alternate;
 }
 
-.loader div:nth-child(2) {
-  animation-delay: 0.15s;
+#spinner div:nth-child(2) { animation-delay: 0.15s; }
+#spinner div:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes bounceDots {
+  from { transform: translateY(0); opacity: 0.4; }
+  to { transform: translateY(-7px); opacity: 1; }
 }
 
-.loader div:nth-child(3) {
-  animation-delay: 0.30s;
-}
-
-@keyframes dotBounce {
-  0% {
-    transform: translateY(0);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translateY(-8px);
-    opacity: 1;
-  }
-}
-
-/* =========================================================
+/* ----------------------------------------------------
    FOOTER
-========================================================= */
+---------------------------------------------------- */
 footer {
+  margin: 60px 0;
   text-align: center;
-  padding: 25px;
   font-size: 0.9rem;
-  color: #777;
+  opacity: 0.7;
+}
+
+/* ----------------------------------------------------
+   RESPONSIVE
+---------------------------------------------------- */
+@media (max-width: 600px) {
+  .hero {
+    height: 28vh;
+  }
+
+  .form-card,
+  .result-card {
+    padding: 18px;
+  }
+
+  .hero .hero-text {
+    font-size: 1rem;
+    padding: 10px 14px;
+  }
 }
