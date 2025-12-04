@@ -1,67 +1,49 @@
 const form = document.getElementById("planningForm");
 const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
-const spinner = document.getElementById("loadingSpinner");
-const ctaContainer = document.getElementById("ctaContainer");
-const submitBtn = document.querySelector(".submit-btn");
-
-const WORKER_URL = "https://walker-planning-worker.emichops.workers.dev/";
+const spinner = document.getElementById("spinner");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Show results card immediately
   resultCard.classList.remove("hidden");
-  resultContent.innerHTML = "Analysing…";
-
-  // Show spinner & disable button
   spinner.classList.remove("hidden");
-  submitBtn.disabled = true;
-  submitBtn.innerText = "Checking...";
+  resultContent.textContent = "Analysing…";
 
   const payload = {
-    postcode: document.getElementById("postcode").value.trim(),
+    postcode: document.getElementById("postcode").value,
     propertyType: document.getElementById("propertyType").value,
     projectType: document.getElementById("projectType").value,
     projection: document.getElementById("projection").value,
     height: document.getElementById("height").value,
-    boundary: document.getElementById("boundary").value,
+    boundaryDistance: document.getElementById("boundaryDistance").value,
     constraints: document.getElementById("constraints").value
   };
 
   try {
-    const response = await fetch(WORKER_URL, {
+    const res = await fetch("https://walker-planning-worker.emichops.workers.dev", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
+    const data = await res.json();
 
     if (data.error) {
-      resultContent.innerHTML = `<p style="color:red;">${data.error}</p>`;
-    } else {
-      // Colour-coded verdict box injected
-      resultContent.innerHTML = `
-        ${data.verdict_html}
-        ${data.summary_html}
-        ${data.issues_html}
-        ${data.notes_html}
-      `;
-
-      // Reveal CTA
-      ctaContainer.classList.remove("hidden");
-
-      // Smooth scroll
-      resultCard.scrollIntoView({ behavior: "smooth" });
+      spinner.classList.add("hidden");
+      resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
+      return;
     }
 
-  } catch (err) {
-    resultContent.innerHTML = `<p style="color:red;">Unexpected error: ${err.message}</p>`;
-  }
+    spinner.classList.add("hidden");
+    resultContent.innerHTML = `
+      ${data.conclusion_html}
+      ${data.summary_html}
+      ${data.details_html}
+    `;
 
-  // Reset UI
-  spinner.classList.add("hidden");
-  submitBtn.disabled = false;
-  submitBtn.innerText = "Run Feasibility Check";
+  } catch (err) {
+    spinner.classList.add("hidden");
+    resultContent.innerHTML = `<p style="color:red">Unexpected error: ${err.message}</p>`;
+  }
 });
