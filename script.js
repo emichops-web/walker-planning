@@ -110,7 +110,7 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
-  // Add dynamic dimension fields
+  // Add dynamic fields
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
@@ -141,29 +141,26 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // Accept only valid fields from Worker
+    // Extract fields safely
     const conclusion = data.conclusion_html || "";
     const summary = data.summary_html || "";
     const details = data.details_html || "";
+    const authority = data.localAuthority || "Unknown local authority";
 
-    if (!conclusion && !summary && !details) {
-      resultContent.innerHTML =
-        "<p style='color:red'>Invalid server response.</p>";
-      return;
-    }
-
-    // Optional sensitivity warning
+    // Sensitivity warning
     const warning = data.autoConstraints && data.autoConstraints !== "None"
       ? `<div class="sensitivity-warning fade-in">
-           ⚠ This project appears to be within a designated or sensitive planning area.
+           ⚠ Location appears to be within a designated or sensitive planning area.
          </div>`
       : "";
 
-    const authorityBlock = data.localAuthority
-      ? `<p><strong>Local Authority:</strong> ${data.localAuthority}</p>`
-      : "";
+    const authorityBlock = `
+      <p style="font-size:0.95rem; opacity:0.9;">
+        <strong>Local Authority:</strong> ${authority}
+      </p>
+    `;
 
-    // Render final result
+    // Render
     resultContent.innerHTML = `
       ${warning}
       ${authorityBlock}
@@ -178,10 +175,10 @@ form.addEventListener("submit", async (e) => {
       </div>
     `;
 
-    // Smooth scroll AFTER fade-in starts
+    // SCROLL (fixed version)
     setTimeout(() => {
       resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 80);
+    }, 180);
 
   } catch (err) {
     spinner.classList.add("hidden");
