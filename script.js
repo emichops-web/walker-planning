@@ -76,10 +76,18 @@ function renderDimensionFields(projectType) {
     const wrapper = document.createElement("div");
     wrapper.classList.add("dimension-item");
 
-    wrapper.innerHTML = `
-      <label>${label}</label>
-      <input type="${type}" id="${field}" placeholder="${placeholder}" required>
-    `;
+wrapper.innerHTML = `
+  <label>${label}</label>
+  <input 
+    type="${type}" 
+    id="${field}" 
+    placeholder="${placeholder}" 
+    required 
+    step="any"
+    inputmode="decimal"
+    pattern="[0-9]*[.,]?[0-9]+"
+  >
+`;
 
     dimensionFieldsContainer.appendChild(wrapper);
   });
