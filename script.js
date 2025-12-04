@@ -20,6 +20,21 @@ const dimensionRules = {
 };
 
 /* -------------------------------
+    POSTCODE VALIDATION + CLEANING
+------------------------------- */
+function isValidPostcode(postcode) {
+  // Standard UK postcode regex
+  const pattern = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+  return pattern.test(postcode.trim());
+}
+
+function normalisePostcode(postcode) {
+  // Uppercase, remove extra spaces, insert space before last 3 chars
+  const pc = postcode.toUpperCase().replace(/\s+/g, "");
+  return pc.replace(/(.{3})$/, " $1");
+}
+
+/* -------------------------------
   DOM ELEMENTS
 ------------------------------- */
 const projectTypeSelect = document.getElementById("projectType");
@@ -107,6 +122,23 @@ projectTypeSelect.addEventListener("change", () => {
 ------------------------------- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  
+    // Validate postcode
+  const postcodeInput = document.getElementById("postcode");
+  const rawPostcode = postcodeInput.value.trim();
+
+  if (!isValidPostcode(rawPostcode)) {
+    resultCard.classList.remove("hidden");
+    resultContent.innerHTML = `
+      <p style="color:red;text-align:center;">
+        Please enter a valid UK postcode (e.g., PH7 4BL).
+      </p>`;
+    resultCard.scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+
+  // Clean it
+  const postcode = normalisePostcode(rawPostcode);
 
   // Show loader
   resultCard.classList.remove("hidden");
@@ -121,7 +153,7 @@ form.addEventListener("submit", async (e) => {
 
   // Build payload
   const payload = {
-    postcode: document.getElementById("postcode").value.trim(),
+    postcode,
     propertyType: document.getElementById("propertyType").value.trim(),
     projectType: document.getElementById("projectType").value.trim(),
     constraints: document.getElementById("constraints").value.trim(),
