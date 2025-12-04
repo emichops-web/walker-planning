@@ -188,19 +188,45 @@ spinner.innerHTML = `
        Render AI Output
     ----------------------------------------------------- */
     resultContent.innerHTML = `
-      <div class="fade-in">
-      <div class="la-label">
-        ${data.localAuthority ? `${data.localAuthority}` : ""}
-      </div>
-        ${data.conclusion_html || ""}
-        ${data.summary_html || ""}
-        ${data.details_html || ""}
-        <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
-          <strong>Disclaimer:</strong> This tool provides an automated general overview.
-          Planning rules vary locally — always confirm with your local authority or a qualified planning consultant.
-        </p>
-      </div>
-    `;
+  <div class="fade-in">
+
+    <!-- Local authority label -->
+    <div class="la-label">
+      ${data.localAuthority ? `${data.localAuthority}` : ""}
+    </div>
+
+    <!-- Verdict pill -->
+    ${data.conclusion_html || ""}
+
+    <!-- Confidence Score -->
+    <div class="confidence-box">
+      <strong>PD Likelihood:</strong> ${data.confidence_score}% confidence
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-block">
+      ${data.summary_html || ""}
+    </div>
+
+    <!-- Risk factors -->
+    ${data.risk_factors && data.risk_factors.length > 0 ? `
+      <h4>Risk Factors</h4>
+      <ul class="risk-list">
+        ${data.risk_factors.map(r => `<li>⚠ ${r}</li>`).join("")}
+      </ul>
+    ` : ""}
+
+    <!-- Details -->
+    ${data.details_html || ""}
+
+    <!-- Disclaimer -->
+    <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
+      <strong>Disclaimer:</strong> This tool provides an automated general overview.
+      Planning rules vary locally — always confirm with your local authority or a qualified planning consultant.
+    </p>
+
+  </div>
+`;
 
     // SECOND AUTOSCROLL → scroll AFTER results appear
     setTimeout(() => {
