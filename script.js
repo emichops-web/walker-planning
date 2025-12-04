@@ -32,10 +32,10 @@ const spinner = document.getElementById("spinner");
 let resultLocked = false;
 
 /* -------------------------------
-  RENDER DIMENSIONS
+  RENDER DIMENSIONS (SAFE)
 ------------------------------- */
 function renderDimensionFields(projectType) {
-  if (resultLocked) return; // Prevent UI wipes after results appear
+  if (resultLocked) return; // prevent wipes after result
 
   const fields = dimensionRules[projectType] || [];
   dimensionFieldsContainer.innerHTML = "";
@@ -43,7 +43,6 @@ function renderDimensionFields(projectType) {
   fields.forEach(field => {
     let label = "";
     let placeholder = "";
-    let type = "number";
 
     switch (field) {
       case "projection":
@@ -81,7 +80,7 @@ function renderDimensionFields(projectType) {
 
     wrapper.innerHTML = `
       <label>${label}</label>
-      <input type="${type}" id="${field}" placeholder="${placeholder}" required>
+      <input type="number" step="0.1" id="${field}" placeholder="${placeholder}" required>
     `;
 
     dimensionFieldsContainer.appendChild(wrapper);
@@ -92,29 +91,31 @@ function renderDimensionFields(projectType) {
 renderDimensionFields(projectTypeSelect.value);
 
 /* -------------------------------
-  FIXED PROJECT TYPE LISTENER
+  PREVENT ANY UI CHANGES AFTER RESULT
 ------------------------------- */
 let lastProjectValue = projectTypeSelect.value;
 
 projectTypeSelect.addEventListener("change", () => {
+  if (resultLocked) return;
   const current = projectTypeSelect.value;
-
-  if (resultLocked || current === lastProjectValue) return;
-
-  lastProjectValue = current;
-  renderDimensionFields(current);
+  if (current !== lastProjectValue) {
+    lastProjectValue = current;
+    renderDimensionFields(current);
+  }
 });
 
 /* -------------------------------
-    FINAL SUBMIT HANDLER (STABLE)
+    SUBMIT HANDLER (FINAL + STABLE)
 ------------------------------- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Prepare UI
+  resultLocked = false; // reset lock ONLY before request
   resultCard.classList.remove("hidden");
-  spinner.classList.remove("hidden");
+
+  // Clear previous content then show spinner
   resultContent.innerHTML = "";
+  spinner.classList.remove("hidden");
 
   resultCard.scrollIntoView({ behavior: "smooth" });
 
@@ -127,7 +128,6 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
-  // Add dynamic dimensions
   const rules = dimensionRules[payload.projectType] || [];
   for (const field of rules) {
     const el = document.getElementById(field);
@@ -162,7 +162,7 @@ form.addEventListener("submit", async (e) => {
     let warningHTML =
       data.autoConstraints !== "None"
         ? `<div class="sensitivity-banner fade-in">
-             ⚠ This appears to be within a designated or sensitive planning area.
+             ⚠ This area includes designated or sensitive planning zones.
            </div>`
         : "";
 
@@ -180,14 +180,16 @@ form.addEventListener("submit", async (e) => {
         ${data.summary_html || ""}
         ${data.details_html || ""}
         <p class="disclaimer">
-          <strong>Disclaimer:</strong> This tool provides a general overview only.
+          <strong>Disclaimer:</strong> This tool provides an automated general overview.
           Always confirm with your local authority or a qualified planning consultant.
         </p>
       </div>
     `;
 
-    // 🔒 Lock UI *after* result fully rendered
-    resultLocked = true;
+    // 🔒 Lock AFTER content is written
+    setTimeout(() => {
+      resultLocked = true;
+    }, 150);
 
   } catch (err) {
     spinner.classList.add("hidden");
