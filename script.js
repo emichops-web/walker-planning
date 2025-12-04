@@ -1,99 +1,69 @@
-// ------------------------------
-// Dynamic Dimension Fields
-// ------------------------------
+document.addEventListener("DOMContentLoaded", () => {
 
-const dimensionFields = document.getElementById("dimensionFields");
-const projectTypeSelect = document.getElementById("projectType");
+  const form = document.getElementById("planningForm");
+  const resultCard = document.getElementById("resultCard");
+  const resultContent = document.getElementById("resultContent");
 
-const fieldTemplates = {
-  projection: `<div><label>Projection (m) *</label><input type="number" id="projection" step="0.1" min="0"></div>`,
-  height: `<div><label>Height (m) *</label><input type="number" id="height" step="0.1" min="0"></div>`,
-  boundary: `<div><label>Distance to nearest boundary (m) *</label><input type="number" id="boundaryDistance" step="0.1" min="0"></div>`,
-  dormerProjection: `<div><label>Dormer projection (m) *</label><input type="number" id="dormerProjection" step="0.1" min="0"></div>`,
-  roofIncrease: `<div><label>Roof height increase (m) *</label><input type="number" id="roofIncrease" step="0.1" min="0"></div>`,
-  footprint: `<div><label>Footprint (sqm) *</label><input type="number" id="footprint" step="0.1" min="0"></div>`
-};
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-// Map project → required fields
-const projectFieldMap = {
-  "Rear extension": ["projection", "height", "boundary"],
-  "Side extension": ["projection", "height", "boundary"],
-  "Wrap-around extension": ["projection", "height", "boundary"],
+    // --- Collect FIELD VALUES ---
+    const postcode = document.getElementById("postcode")?.value.trim();
+    const propertyType = document.getElementById("propertyType")?.value.trim();
+    const projectType = document.getElementById("projectType")?.value.trim();
+    const projection = document.getElementById("projection")?.value.trim();
+    const height = document.getElementById("height")?.value.trim();
+    const boundary = document.getElementById("boundaryDistance")?.value.trim();
+    const constraints = document.getElementById("constraints")?.value.trim();
 
-  "Two-storey extension": ["height"],
+    // --- Show Loading State ---
+    resultCard.classList.remove("hidden");
+    resultContent.innerHTML = `<p>Analysing…</p>`;
 
-  "Porch / front extension": ["projection"],
+    // --- Build Request Payload ---
+    const payload = {
+      postcode,
+      propertyType,
+      projectType,
+      projection,
+      height,
+      boundaryDistance: boundary,
+      constraints
+    };
 
-  "Loft dormer extension": ["height", "dormerProjection"],
-  "Hip-to-gable loft conversion": ["height"],
-  "Roof lights / skylights": ["height"],
-  "Raising roof height": ["roofIncrease"],
+    console.log("Sending payload:", payload);
 
-  "Garden room": ["footprint", "height", "boundary"],
-  "Single-storey outbuilding": ["footprint", "height", "boundary"],
-  "Garage conversion": [],
+    try {
+      const response = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-  "Windows / larger windows": [],
-  "Bi-fold / sliding doors": [],
-  "Replace cladding": [],
+      const data = await response.json();
 
-  "Solar panels (roof)": ["projection"],
-  "Solar panels (garden)": ["footprint", "height"],
+      if (data.error) {
+        resultContent.innerHTML = `
+          <p style="color:#c00; font-weight:600;">${data.error}</p>
+          <p class="disclaimer"><strong>Disclaimer:</strong> This tool provides an automated overview. Planning rules vary locally — consult your local authority or a planning professional before starting work.</p>
+        `;
+        return;
+      }
 
-  "Air-source heat pump": ["boundary"],
-  "Chimney / flue": ["height"],
-  "Fencing / gates": ["height"]
-};
+      // --- Success: Insert AI Result HTML ---
+      resultContent.innerHTML = `
+        ${data.conclusion_html}
+        ${data.summary_html}
+        ${data.details_html}
+        <p class="disclaimer"><strong>Disclaimer:</strong> This tool provides an automated overview. Planning rules vary locally — always consult your local planning authority or a qualified planning consultant.</p>
+      `;
 
-// When project type changes, update dimension fields
-projectTypeSelect.addEventListener("change", () => {
-  dimensionFields.innerHTML = "";
-  const selected = projectTypeSelect.value;
-  const fields = projectFieldMap[selected] || [];
-
-  fields.forEach(f => dimensionFields.insertAdjacentHTML("beforeend", fieldTemplates[f]));
-});
-
-// ------------------------------
-// Form Submission
-// ------------------------------
-
-document.getElementById("planningForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const loading = `<p style="color:#666;">Analysing…</p>`;
-  document.getElementById("resultContent").innerHTML = loading;
-
-  const payload = {
-    postcode: document.getElementById("postcode").value,
-    propertyType: document.getElementById("propertyType").value,
-    projectType: document.getElementById("projectType").value,
-    constraints: document.getElementById("constraints").value,
-
-    projection: document.getElementById("projection")?.value || null,
-    height: document.getElementById("height")?.value || null,
-    boundaryDistance: document.getElementById("boundaryDistance")?.value || null,
-    dormerProjection: document.getElementById("dormerProjection")?.value || null,
-    roofIncrease: document.getElementById("roofIncrease")?.value || null,
-    footprint: document.getElementById("footprint")?.value || null
-  };
-
-  const response = await fetch(
-    "https://walker-planning-worker.emichops.workers.dev",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+    } catch (err) {
+      console.error("Fetch error:", err);
+      resultContent.innerHTML = `
+        <p style="color:#c00; font-weight:600;">Server error: ${err.message}</p>
+        <p class="disclaimer"><strong>Disclaimer:</strong> This tool provides an automated overview. Planning rules vary locally — consult your local authority or a planning professional before starting work.</p>
+      `;
     }
-  );
-
-  const result = await response.json();
-
-  if (result.error) {
-    document.getElementById("resultContent").innerHTML = `<p style="color:red;">${result.error}</p>`;
-    return;
-  }
-
-  document.getElementById("resultContent").innerHTML =
-    result.conclusion_html + result.summary_html + result.details_html;
+  });
 });
