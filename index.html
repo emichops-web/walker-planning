@@ -38,85 +38,87 @@
   <p>Fast AI guidance based on UK planning rules</p>
 </section>
 
-<!-- FORM -->
-<div class="form-wrapper">
+<form id="planningForm" class="form-card">
 
   <!-- PROPERTY DETAILS -->
-  <form id="planningForm" class="form-card">
-    
-    <h2 class="section-title">Property Details</h2>
+  <h3>Property Details</h3>
 
-    <div class="two-col">
-      <div>
-        <label>Postcode *</label>
-        <input id="postcode" type="text" placeholder="e.g., PH7 4BL" required />
-      </div>
-
-      <div>
-        <label>Property Type *</label>
-        <select id="propertyType" required>
-          <option>Detached</option>
-          <option>Semi-detached</option>
-          <option>Terraced</option>
-          <option>Flat</option>
-          <option>Bungalow</option>
-        </select>
-      </div>
+  <div class="two-col">
+    <div>
+      <label>Postcode *</label>
+      <input id="postcode" type="text" placeholder="e.g., PH7 4BL" required>
     </div>
 
-    <!-- PROJECT TYPE -->
-    <h2 class="section-title">Project Type</h2>
-
-    <label>Select your project *</label>
-    <select id="projectType" required>
-      <option>Rear extension</option>
-      <option>Side extension</option>
-      <option>Wrap-around extension</option>
-      <option>Porch / front extension</option>
-      <option>Loft dormer extension</option>
-      <option>Roof lights</option>
-      <option>Single-storey outbuilding</option>
-      <option>Two-storey extension</option>
-    </select>
-
-    <!-- DIMENSIONS -->
-    <h2 class="section-title">Dimensions</h2>
-
-    <div class="three-col">
-      <div>
-        <label>Projection (m) *</label>
-        <input id="projection" type="number" min="0.1" step="0.1" required />
-      </div>
-
-      <div>
-        <label>Height (m) *</label>
-        <input id="height" type="number" min="0.1" step="0.1" required />
-      </div>
-
-      <div>
-        <label>Distance to nearest boundary *</label>
-        <select id="boundaryDistance">
-          <option>Less than 2 metres</option>
-          <option>More than 2 metres</option>
-        </select>
-      </div>
+    <div>
+      <label>Property Type *</label>
+      <select id="propertyType" required>
+        <option>Detached</option>
+        <option>Semi-detached</option>
+        <option>Terraced</option>
+        <option>Flat</option>
+        <option>Bungalow</option>
+      </select>
     </div>
+  </div>
 
-    <!-- CONSTRAINTS -->
-    <h2 class="section-title">Site Constraints</h2>
-    <label>Constraints *</label>
-    <select id="constraints">
-      <option>None</option>
-      <option>Conservation area</option>
-      <option>Listed building</option>
-      <option>Article 4</option>
-      <option>Green belt</option>
-    </select>
+  <!-- PROJECT TYPE -->
+  <h3>Project Type</h3>
 
-    <button type="submit" class="submit-btn">
-      Run Feasibility Check
-    </button>
-  </form>
+  <label>Select your project *</label>
+  <select id="projectType" required>
+    <option value="">Select…</option>
+
+    <!-- Extensions -->
+    <option>Rear extension</option>
+    <option>Side extension</option>
+    <option>Wrap-around extension</option>
+    <option>Two-storey extension</option>
+    <option>Porch / front extension</option>
+
+    <!-- Loft & Roof -->
+    <option>Loft dormer extension</option>
+    <option>Hip-to-gable loft conversion</option>
+    <option>Roof lights / skylights</option>
+    <option>Raising roof height</option>
+
+    <!-- Outbuildings -->
+    <option>Garden room</option>
+    <option>Single-storey outbuilding</option>
+    <option>Garage conversion</option>
+
+    <!-- Alterations -->
+    <option>Windows / larger windows</option>
+    <option>Bi-fold / sliding doors</option>
+    <option>Replace cladding</option>
+    <option>Solar panels (roof)</option>
+    <option>Solar panels (garden)</option>
+
+    <!-- Other -->
+    <option>Air-source heat pump</option>
+    <option>Chimney / flue</option>
+    <option>Fencing / gates</option>
+  </select>
+
+  <!-- DIMENSIONS (DYNAMIC) -->
+  <h3>Dimensions</h3>
+  <div id="dimensionFields">
+    <!-- JS will auto-insert the required fields -->
+  </div>
+
+  <!-- SITE CONSTRAINTS -->
+  <h3>Site Constraints</h3>
+
+  <label>Constraints *</label>
+  <select id="constraints">
+    <option>None</option>
+    <option>Conservation area</option>
+    <option>Listed building</option>
+    <option>Article 4</option>
+    <option>Green belt</option>
+  </select>
+
+  <button type="submit" class="submit-btn">Run Feasibility Check</button>
+</form>
 </div>
 
 <!-- RESULTS CARD -->
