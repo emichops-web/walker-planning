@@ -73,7 +73,7 @@ projectTypeSelect.addEventListener("change", () => {
 
 
 /* =========================================================================
-   SUBMIT HANDLER
+   FORM SUBMIT HANDLER
 =========================================================================== */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -82,12 +82,12 @@ form.addEventListener("submit", async (e) => {
   resultCard.classList.remove("hidden");
   spinner.classList.remove("hidden");
   resultContent.innerHTML = "";
-  
-  // Scroll immediately
+
+  // Scroll to result card immediately
   resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 
   /* -------------------------
-     Build payload
+     Build request payload
   ------------------------- */
   const payload = {
     postcode: document.getElementById("postcode").value.trim(),
@@ -99,42 +99,42 @@ form.addEventListener("submit", async (e) => {
     dimensions: {}
   };
 
-  // Add dynamic dimensions
-  const rules = dimensionRules[payload.projectType] || [];
-  for (const field of rules) {
+  // Add dynamic dimension values
+  const fields = dimensionRules[payload.projectType] || [];
+  for (const field of fields) {
     const el = document.getElementById(field);
     if (!el || !el.value.trim()) {
       spinner.classList.add("hidden");
-      resultContent.innerHTML = "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
+      resultContent.innerHTML = "<p style='color:red;text-align:center;'>Missing required dimensions.</p>";
       return;
     }
     payload.dimensions[field] = el.value.trim();
   }
 
   /* -------------------------
-     Send to Worker
+     Send to Cloudflare Worker
   ------------------------- */
   try {
-    const response = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
+    const res = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
+    const data = await res.json();
     spinner.classList.add("hidden");
 
     if (data.error) {
-      resultContent.innerHTML = `<p style='color:red'>${data.error}</p>`;
+      resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
       return;
     }
 
-    /* ---------------------------------------------------------------
-       FORMAT THE NEW STRUCTURED RESULTS (Option B)
-    ---------------------------------------------------------------- */
-    const { 
-      verdict, 
-      headline, 
+    /* ================================================================
+       RENDER OPTION B — CONSULTANT-STYLE STRUCTURED REPORT
+    ================================================================ */
+    const {
+      verdict,
+      headline,
       confidence,
       executiveSummary,
       keyBenefits = [],
@@ -165,16 +165,12 @@ form.addEventListener("submit", async (e) => {
 
         <h3>Key Benefits</h3>
         <ul>
-          ${keyBenefits.map(b => `<li>${b}</li>`).join("")}
+          ${keyBenefits.length ? keyBenefits.map(b => `<li>${b}</li>`).join("") : "<li>No key benefits identified.</li>"}
         </ul>
 
         <h3>Key Risks</h3>
         <ul>
-          ${
-            keyRisks.length
-              ? keyRisks.map(r => `<li>${r}</li>`).join("")
-              : "<li>No significant risks identified.</li>"
-          }
+          ${keyRisks.length ? keyRisks.map(r => `<li>${r}</li>`).join("") : "<li>No major risks identified.</li>"}
         </ul>
 
         <h3>Professional Assessment</h3>
@@ -187,27 +183,31 @@ form.addEventListener("submit", async (e) => {
         <p><strong>Local Authority:</strong> ${location.localAuthority || "Unknown"}</p>
         <p><strong>Nation:</strong> ${location.nation || "Unknown"}</p>
 
-        ${
-          flags.incompleteUserInfo
-            ? `<p style="opacity:0.7"><em>Note: Some inputs were incomplete, so the assessment includes added caution.</em></p>`
-            : ""
-        }
+        ${flags.incompleteUserInfo ? `
+          <p style="opacity:0.7">
+            <em>Some details were incomplete. The assessment includes added caution.</em>
+          </p>` : ""}
 
-        ${
-          flags.possibleProtectedArea
-            ? `<p style="opacity:0.7;color:#b06"><em>Warning: Automatic checks suggest this postcode may fall in a protected area (e.g., Conservation Area). Confirming the designation is recommended.</em></p>`
-            : ""
-        }
+        ${flags.possibleProtectedArea ? `
+          <p style="opacity:0.7;color:#a03">
+            <em>This postcode may fall within a protected area such as a Conservation Area.
+            Confirming this is recommended.</em>
+          </p>` : ""}
 
         <p class="disclaimer">
-          This tool provides an automated early feasibility review.  
-          Local variations apply — confirm exact constraints with your local authority or a qualified planning consultant.
+          This automated tool provides an early feasibility review.  
+          Planning rules vary locally — confirm exact constraints with your local authority  
+          or a qualified planning consultant.
         </p>
+
       </div>
     `;
 
+    // Scroll again after results load
+    resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
   } catch (err) {
     spinner.classList.add("hidden");
-    resultContent.innerHTML = `<p style='color:red'>Request failed: ${err.message}</p>`;
+    resultContent.innerHTML = `<p style="color:red">Request failed: ${err.message}</p>`;
   }
 });
