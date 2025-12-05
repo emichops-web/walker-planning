@@ -29,8 +29,10 @@ const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
 const spinner = document.getElementById("spinner");
 
+let resultLocked = false;
+
 /* -------------------------------
-  RENDER DIMENSION FIELDS
+  RENDER DIMENSIONS
 ------------------------------- */
 function renderDimensionFields(projectType) {
   const fields = dimensionRules[projectType] || [];
@@ -44,7 +46,7 @@ function renderDimensionFields(projectType) {
     switch (field) {
       case "projection":
         label = "Projection (m) *";
-        placeholder = "e.g., 3.0";
+        placeholder = "e.g., 3.2";
         break;
       case "width":
         label = "Width (m) *";
@@ -52,11 +54,11 @@ function renderDimensionFields(projectType) {
         break;
       case "height":
         label = "Height (m) *";
-        placeholder = "e.g., 3";
+        placeholder = "e.g., 2.8";
         break;
       case "boundaryDistance":
         label = "Distance to nearest boundary (m) *";
-        placeholder = "e.g., 2";
+        placeholder = "e.g., 1.5";
         break;
       case "dormerVolume":
         label = "Dormer volume (m³) *";
@@ -74,10 +76,12 @@ function renderDimensionFields(projectType) {
 
     const wrapper = document.createElement("div");
     wrapper.classList.add("dimension-item");
+
     wrapper.innerHTML = `
       <label>${label}</label>
       <input type="${type}" step="0.1" id="${field}" placeholder="${placeholder}" required>
     `;
+
     dimensionFieldsContainer.appendChild(wrapper);
   });
 }
@@ -87,53 +91,64 @@ projectTypeSelect.addEventListener("change", () => {
   renderDimensionFields(projectTypeSelect.value);
 });
 
+
 /* -------------------------------
-  FORM SUBMIT HANDLER
+  SUBMIT HANDLER
 ------------------------------- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Show card and loader
+  resultLocked = true;
+
+  // Show results card + loader
   resultCard.classList.remove("hidden");
   spinner.classList.remove("hidden");
-
-  resultContent.innerHTML = `
-    <div class="loader">
+  spinner.innerHTML = `
+    <div class="dot-loader">
       <div></div><div></div><div></div>
     </div>
-    <p style="text-align:center;color:#666;margin-top:8px;">
-      Analysing your project…
-    </p>
   `;
+  resultContent.innerHTML = "";
 
-  // Scroll immediately to loader
-  resultCard.scrollIntoView({ behavior: "smooth" });
+  // Scroll immediately
+  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 
   // Build payload
   const payload = {
     postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value.trim(),
-    projectType: document.getElementById("projectType").value.trim(),
+    projectType: projectTypeSelect.value.trim(),
     areaStatus: document.getElementById("areaStatus").value.trim(),
     propertyStatus: document.getElementById("propertyStatus").value.trim(),
-    description: document.getElementById("description").value.trim(),
+    description: document.getElementById("description")?.value || "",
     dimensions: {}
   };
 
-  // Add dynamic fields
   const rules = dimensionRules[payload.projectType] || [];
-  for (const field of rules) {
-    const el = document.getElementById(field);
+  for (const f of rules) {
+    const el = document.getElementById(f);
     if (!el || !el.value.trim()) {
       spinner.classList.add("hidden");
-      resultContent.innerHTML = "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
+      resultContent.innerHTML = `<p style="color:red;text-align:center">Missing required dimensions.</p>`;
       return;
     }
-    payload.dimensions[field] = el.value.trim();
+    payload.dimensions[f] = el.value.trim();
+  }
+
+  // Postcode format check
+  const postcodePattern = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+  if (!postcodePattern.test(payload.postcode)) {
+    spinner.classList.add("hidden");
+    resultContent.innerHTML = `
+      <p style="color:red;text-align:center">
+        Please enter a valid UK postcode (e.g., PH7 4BL).
+      </p>
+    `;
+    return;
   }
 
   /* -------------------------------
-      SEND TO WORKER
+        SEND TO WORKER
   ------------------------------- */
   try {
     const res = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
@@ -151,46 +166,44 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    // -------------------------------
-    // RENDER COMPLETE RESULT BLOCK
-    // -------------------------------
+    /* -------------------------------
+          BUILD RESULT UI
+    ------------------------------- */
+
+    const pdScoreText = data.pdScore !== null ? `${data.pdScore}% confidence` : "not available";
+
+    const risksHTML = Array.isArray(data.risks_html)
+      ? data.risks_html.map(r => `<li>${r}</li>`).join("")
+      : "<li>No risk data available.</li>";
+
+    const designation = data.designation || { area: "unknown", property: "unknown" };
+
     resultContent.innerHTML = `
       <div class="fade-in">
 
-        ${data.conclusion_html || ""}
+        ${data.verdict_html || ""}
 
-        <div class="pd-score">
-          <strong>Estimated PD Likelihood:</strong> ${data.confidence || 0}%
-        </div>
+        ${data.summary_html || ""}
 
-        <div class="result-section">
-          ${data.summary_html || ""}
-        </div>
+        <h3>PD Likelihood:</h3>
+        <p><strong>${pdScoreText}</strong></p>
 
-        <div class="result-section">
-          ${data.risk_html || ""}
-        </div>
+        <h3>Risk Factors</h3>
+        <ul>${risksHTML}</ul>
 
-        <div class="result-section">
-          ${data.notes_html || ""}
-        </div>
+        <h3>Constraint Interpretation</h3>
+        <p><strong>Area:</strong> ${designation.area.replace(/_/g," ")}</p>
+        <p><strong>Property status:</strong> ${designation.property.replace(/_/g," ")}</p>
+        <p><strong>Local Authority:</strong> ${data.authority || "Unknown"}</p>
+        <p><strong>Nation:</strong> ${data.nation || "Unknown"}</p>
 
-        <div class="result-section">
-          ${data.constraint_html || ""}
-        </div>
-
-        <p class="disclaimer">
-          <strong>Disclaimer:</strong> This tool provides an automated general overview.
-          Planning rules vary locally — always confirm with your Local Authority or a qualified planning consultant.
+        <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
+          <strong>Disclaimer:</strong>
+          This automated tool provides a general overview only. 
+          Always confirm constraints with your local authority or a qualified planner.
         </p>
-
       </div>
     `;
-
-    // Scroll to full result
-    setTimeout(() => {
-      resultCard.scrollIntoView({ behavior: "smooth" });
-    }, 150);
 
   } catch (err) {
     spinner.classList.add("hidden");
