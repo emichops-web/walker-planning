@@ -1,169 +1,100 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const projectTypeSelect = document.getElementById("projectType");
-  const dimensionsContainer = document.getElementById("dimensionsContainer");
-  const resultContent = document.getElementById("resultContent");
-  const form = document.getElementById("pdForm");
-  const loader = document.getElementById("loader");
+// -----------------------------
+// Dynamic dimension rendering
+// -----------------------------
+const projectType = document.getElementById("projectType");
+const dimensionFields = document.getElementById("dimension-fields");
 
-  // --------------------------
-  // Dynamic dimension handling
-  // --------------------------
+projectType.addEventListener("change", () => {
+    const type = projectType.value;
+    let html = "";
 
-  const dimensionMap = {
-    "Rear extension": ["projection", "height", "boundary"],
-    "Side extension": ["projection", "height", "boundary"],
-    "Wrap-around extension": ["projection", "height", "boundary"],
-    "Porch / front extension": ["projection", "height"],
-    "Two-storey extension": ["projection", "height", "boundary"],
-    "Garden room / outbuilding": ["projection", "height"],
-    "Garage conversion": [],
-    "Loft conversion": [],
-    "Dormer extension": ["projection", "height"],
-    "Annexe / outbuilding": ["projection", "height", "boundary"]
-  };
+    const needsDims = [
+        "rear-extension",
+        "side-extension",
+        "wrap-extension",
+        "two-storey",
+        "front-porch"
+    ];
 
-  function renderDimensionFields(type) {
-    dimensionsContainer.innerHTML = "";
-    const fields = dimensionMap[type] || [];
+    if (needsDims.includes(type)) {
+        html = `
+            <label>Projection (m)</label>
+            <input id="dim-proj" type="number" step="0.1" />
 
-    fields.forEach((f) => {
-      const label = f === "projection" ? "Projection (m)" :
-                    f === "height" ? "Height (m)" :
-                    "Distance to boundary (m)";
+            <label>Height (m)</label>
+            <input id="dim-height" type="number" step="0.1" />
 
-      const input = document.createElement("input");
-      input.type = "number";
-      input.min = "0";
-      input.step = "0.1";
-      input.id = f;
-      input.placeholder = label;
-      input.className = "form-input";
+            <label>Nearest boundary distance (m)</label>
+            <input id="dim-boundary" type="number" step="0.1" />
+        `;
+    }
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "input-wrapper";
-      wrapper.appendChild(input);
+    dimensionFields.innerHTML = html;
+});
 
-      dimensionsContainer.appendChild(wrapper);
-    });
-  }
-
-  projectTypeSelect.addEventListener("change", () => {
-    renderDimensionFields(projectTypeSelect.value);
-  });
-
-  // --------------------------
-  // Form submission
-  // --------------------------
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    loader.style.display = "block";
-    resultContent.innerHTML = "";
-
+// -----------------------------
+// Submit request to Worker
+// -----------------------------
+document.getElementById("runCheck").addEventListener("click", async () => {
     const payload = {
-      postcode: document.getElementById("postcode").value.trim(),
-      propertyType: document.getElementById("propertyType").value.trim(),
-      projectType: projectTypeSelect.value.trim(),
-      areaStatus: document.getElementById("areaStatus").value.trim(),
-      propertyStatus: document.getElementById("propertyStatus").value.trim(),
-      description: document.getElementById("description").value.trim(),
-      dimensions: {}
+        postcode: document.getElementById("postcode").value.trim(),
+        propertyType: document.getElementById("propertyType").value,
+        projectType: projectType.value,
+        areaStatus: document.getElementById("areaStatus").value,
+        propertyStatus: document.getElementById("propertyStatus").value,
+        description: document.getElementById("description").value.trim(),
+        dimensions: {}
     };
 
-    // Grab dynamic dimensions
-    (dimensionMap[payload.projectType] || []).forEach((f) => {
-      const v = document.getElementById(f)?.value.trim();
-      if (v !== "" && !isNaN(v)) payload.dimensions[f] = parseFloat(v);
-    });
+    if (document.getElementById("dim-proj")) {
+        payload.dimensions = {
+            projection: parseFloat(document.getElementById("dim-proj").value) || 0,
+            height: parseFloat(document.getElementById("dim-height").value) || 0,
+            boundary: parseFloat(document.getElementById("dim-boundary").value) || 0
+        };
+    }
 
-    try {
-      const res = await fetch("/api", {
+    const res = await fetch("https://walker-planning-worker.emichops.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
-      });
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      loader.style.display = "none";
+    const box = document.getElementById("result-card");
+    const content = document.getElementById("result-content");
 
-      if (!data || typeof data !== "object" || !data.verdict) {
-        resultContent.innerHTML = `<p>Unexpected response format.</p>`;
-        return;
-      }
+    let verdictClass = 
+        data.score >= 65 ? "verdict-good" :
+        data.score >= 40 ? "verdict-warning" : "verdict-bad";
 
-      renderReport(data);
+    content.innerHTML = `
+        <div class="verdict-pill ${verdictClass}">${data.verdict}</div>
 
-      resultContent.scrollIntoView({ behavior: "smooth" });
+        <p><strong>Estimated likelihood:</strong> ${data.score}%</p>
 
-    } catch (err) {
-      loader.style.display = "none";
-      resultContent.innerHTML = `<p>Error: ${err.message}</p>`;
-    }
-  });
+        <h3>Summary</h3>
+        <p>${data.assessment}</p>
 
-  // --------------------------
-  // REPORT RENDERING
-  // --------------------------
+        <h3>Positive Factors</h3>
+        <ul>${data.positives.map(x => `<li>${x}</li>`).join("")}</ul>
 
-  function renderReport(data) {
-    const score = data.score ?? 0;
+        <h3>Key Risks</h3>
+        <ul>${data.risks.map(x => `<li>${x}</li>`).join("")}</ul>
 
-    const scoreBar = `
-      <div class="score-bar-container">
-        <div class="score-bar-fill" style="width: ${score}%"></div>
-      </div>
-      <p class="score-label">${score}% likelihood</p>
+        <h3>Professional Assessment</h3>
+        <p>${data.professional}</p>
+
+        <h3>Recommendation</h3>
+        <p>${data.recommendation}</p>
+
+        <h3>Location</h3>
+        <p><strong>Town:</strong> ${data.town || "Unknown"}</p>
+        <p><strong>Authority:</strong> ${data.authority}</p>
+        <p><strong>Nation:</strong> ${data.nation}</p>
     `;
 
-    const positives = data.positives?.length
-      ? data.positives.map(p => `<li>${p}</li>`).join("")
-      : "<li>No clear positive factors identified.</li>";
-
-    const risks = data.risks?.length
-      ? data.risks.map(r => `<li>${r}</li>`).join("")
-      : "<li>No significant risks identified from available information.</li>";
-
-    const town = data.town && data.town !== "your area"
-      ? data.town
-      : "your local area";
-
-    const verdictClass =
-      data.verdict.includes("advised") ? "verdict-bad" :
-      data.verdict.includes("Uncertain") ? "verdict-mid" : "verdict-good";
-
-    resultContent.innerHTML = `
-      <div class="verdict-pill ${verdictClass}">
-        ${data.verdict}
-      </div>
-
-      <h3>Permitted Development Confidence</h3>
-      ${scoreBar}
-
-      <h3>Summary</h3>
-      <p>${data.assessment}</p>
-
-      <h3>Potential Positive Factors</h3>
-      <ul>${positives}</ul>
-
-      <h3>Key Risks</h3>
-      <ul>${risks}</ul>
-
-      <h3>Professional Assessment</h3>
-      <p>${data.professional}</p>
-
-      <h3>Recommendation</h3>
-      <p>${data.recommendation}</p>
-
-      <h3>Location Context</h3>
-      <p><strong>Town:</strong> ${town}</p>
-      <p><strong>Local Authority:</strong> ${data.authority}</p>
-      <p><strong>Nation:</strong> ${data.nation}</p>
-
-      <p class="note">
-        Note: This automated assessment provides an initial indication only.
-        Walker Planning can provide a formal planning appraisal if required.
-      </p>
-    `;
-  }
+    box.classList.remove("hidden");
+    box.scrollIntoView({behavior:"smooth"});
 });
