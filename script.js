@@ -27,9 +27,10 @@ const dimensionFieldsContainer = document.getElementById("dimensionFields");
 const form = document.getElementById("planningForm");
 const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
+const spinner = document.getElementById("spinner");
 
 /* -------------------------------
-  UPDATE DIMENSION FIELDS
+  RENDER DIMENSION FIELDS
 ------------------------------- */
 function renderDimensionFields(projectType) {
   const fields = dimensionRules[projectType] || [];
@@ -43,7 +44,7 @@ function renderDimensionFields(projectType) {
     switch (field) {
       case "projection":
         label = "Projection (m) *";
-        placeholder = "e.g., 3";
+        placeholder = "e.g., 3.0";
         break;
       case "width":
         label = "Width (m) *";
@@ -73,41 +74,39 @@ function renderDimensionFields(projectType) {
 
     const wrapper = document.createElement("div");
     wrapper.classList.add("dimension-item");
-
     wrapper.innerHTML = `
       <label>${label}</label>
-      <input type="${type}" id="${field}" placeholder="${placeholder}" required>
+      <input type="${type}" step="0.1" id="${field}" placeholder="${placeholder}" required>
     `;
-
     dimensionFieldsContainer.appendChild(wrapper);
   });
 }
 
-/* Initial load */
 renderDimensionFields(projectTypeSelect.value);
-
-/* Update fields when project changes */
 projectTypeSelect.addEventListener("change", () => {
   renderDimensionFields(projectTypeSelect.value);
 });
 
 /* -------------------------------
-    SUBMIT HANDLER
+  FORM SUBMIT HANDLER
 ------------------------------- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Show loader
+  // Show card and loader
   resultCard.classList.remove("hidden");
+  spinner.classList.remove("hidden");
+
   resultContent.innerHTML = `
     <div class="loader">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
+      <div></div><div></div><div></div>
     </div>
-    <p style="text-align:center;color:#666;margin-top:8px;">Analysing your project…</p>
+    <p style="text-align:center;color:#666;margin-top:8px;">
+      Analysing your project…
+    </p>
   `;
 
+  // Scroll immediately to loader
   resultCard.scrollIntoView({ behavior: "smooth" });
 
   // Build payload
@@ -115,16 +114,9 @@ form.addEventListener("submit", async (e) => {
     postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value.trim(),
     projectType: document.getElementById("projectType").value.trim(),
-
-    // NEW FIELDS
-    areaDesignation: document.getElementById("areaDesignation").value.trim(),
+    areaStatus: document.getElementById("areaStatus").value.trim(),
     propertyStatus: document.getElementById("propertyStatus").value.trim(),
-
-    // Description field
-    description: document.getElementById("description") 
-      ? document.getElementById("description").value.trim()
-      : "",
-
+    description: document.getElementById("description").value.trim(),
     dimensions: {}
   };
 
@@ -133,14 +125,16 @@ form.addEventListener("submit", async (e) => {
   for (const field of rules) {
     const el = document.getElementById(field);
     if (!el || !el.value.trim()) {
-      resultContent.innerHTML =
-        "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
+      spinner.classList.add("hidden");
+      resultContent.innerHTML = "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
       return;
     }
     payload.dimensions[field] = el.value.trim();
   }
 
-  /* SEND TO WORKER */
+  /* -------------------------------
+      SEND TO WORKER
+  ------------------------------- */
   try {
     const res = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
       method: "POST",
@@ -150,31 +144,56 @@ form.addEventListener("submit", async (e) => {
 
     const data = await res.json();
 
+    spinner.classList.add("hidden");
+
     if (data.error) {
       resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
       return;
     }
 
-    // SUCCESS — AI Output
+    // -------------------------------
+    // RENDER COMPLETE RESULT BLOCK
+    // -------------------------------
     resultContent.innerHTML = `
       <div class="fade-in">
+
         ${data.conclusion_html || ""}
-        ${data.summary_html || ""}
-        ${data.details_html || ""}
-        <p class="location-tag">
-          Local Authority: <strong>${data.localAuthority || "Unknown"}</strong>
-        </p>
-        <p class="designation-tag">
-          Area Type: <strong>${data.autoDesignation || "Unknown"}</strong>
-        </p>
+
+        <div class="pd-score">
+          <strong>Estimated PD Likelihood:</strong> ${data.confidence || 0}%
+        </div>
+
+        <div class="result-section">
+          ${data.summary_html || ""}
+        </div>
+
+        <div class="result-section">
+          ${data.risk_html || ""}
+        </div>
+
+        <div class="result-section">
+          ${data.notes_html || ""}
+        </div>
+
+        <div class="result-section">
+          ${data.constraint_html || ""}
+        </div>
+
         <p class="disclaimer">
-          <strong>Disclaimer:</strong> This automated tool provides a general overview only.
-          Always confirm constraints with your local authority or a qualified planner.
+          <strong>Disclaimer:</strong> This tool provides an automated general overview.
+          Planning rules vary locally — always confirm with your Local Authority or a qualified planning consultant.
         </p>
+
       </div>
     `;
 
+    // Scroll to full result
+    setTimeout(() => {
+      resultCard.scrollIntoView({ behavior: "smooth" });
+    }, 150);
+
   } catch (err) {
+    spinner.classList.add("hidden");
     resultContent.innerHTML = `<p style="color:red">Request failed: ${err.message}</p>`;
   }
 });
