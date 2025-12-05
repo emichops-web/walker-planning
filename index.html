@@ -60,14 +60,30 @@
 
     <div id="dimensionFields"></div>
 
-    <label>Constraints *</label>
-    <select id="constraints">
-      <option>None</option>
-      <option>Conservation area</option>
-      <option>Listed building</option>
-      <option>Article 4</option>
-      <option>National park</option>
-    </select>
+<!-- AREA DESIGNATION (LOCATION-BASED) -->
+<label>Area Designation *</label>
+<select id="areaDesignation" required>
+  <option value="unsure">I’m not sure</option>
+  <option value="none_confirmed">I confirm my property is NOT in a protected/designated area</option>
+  <option value="conservation">Conservation Area</option>
+  <option value="national_park">National Park</option>
+  <option value="aonb">Area of Outstanding Natural Beauty (AONB)</option>
+  <option value="green_belt">Green Belt</option>
+  <option value="whs">World Heritage Site</option>
+  <option value="other">Other / Unsure</option>
+</select>
+
+<!-- PROPERTY STATUS (PROPERTY-BASED) -->
+<label>Property Status *</label>
+<select id="propertyStatus" required>
+  <option value="unsure">I’m not sure</option>
+  <option value="none_confirmed">I confirm my property is NOT under any special restrictions</option>
+  <option value="listed">Listed Building</option>
+  <option value="article4">Article 4 Direction applies</option>
+  <option value="flat">Flat / Maisonette (PD rights restricted)</option>
+  <option value="curtilage">Within curtilage of a listed building</option>
+  <option value="other">Other / Not listed</option>
+</select>
 
     <!-- NEW PROJECT DESCRIPTION -->
     <label>Project Description (optional)</label>
