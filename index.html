@@ -1,109 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Walker Planning – Instant Permitted Development Check</title>
-
-    <!-- CSS MUST LOAD BEFORE DOM RENDER -->
-    <link rel="stylesheet" href="styles.css" type="text/css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Walker Planning – Permitted Development Checker</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- HERO SECTION (unchanged from your working version) -->
-    <header class="hero">
-        <img src="logo.png" alt="Walker Planning" class="logo" />
-        <h1>Instant Permitted Development Check</h1>
-        <p>Fast AI guidance based on UK planning rules</p>
-    </header>
+<!-- Sticky Header -->
+<header class="top-bar">
+  <img src="logo.png" class="top-logo" alt="Walker Planning">
+</header>
 
-    <!-- MAIN CONTAINER -->
-    <main class="container">
+<!-- HERO SECTION -->
+<section class="hero-section">
+  <div class="hero-left">
+    <img src="hero.png" class="hero-image" alt="House extension">
+  </div>
+  <div class="hero-right">
+    <h1>Instant Permitted Development Check</h1>
+    <p>Fast AI guidance using UK planning rules</p>
+  </div>
+</section>
 
-        <h2>Property Details</h2>
+<!-- FORM WRAPPER -->
+<div class="form-wrapper">
 
-        <form id="pdForm">
+  <form id="planningForm" class="form-card">
 
-            <!-- POSTCODE -->
-            <label>Postcode *</label>
-            <input type="text" id="postcode" required placeholder="e.g., PH7 4BL" />
+    <label>Postcode *</label>
+    <input id="postcode" type="text" placeholder="e.g., PH7 4BL" required>
 
-            <!-- PROPERTY TYPE -->
-            <label>Property Type *</label>
-            <select id="propertyType" required>
-                <option value="">Select…</option>
-                <option>Detached</option>
-                <option>Semi-detached</option>
-                <option>Terraced</option>
-                <option>Flat</option>
-                <option>Bungalow</option>
-            </select>
+    <label>Property Type *</label>
+    <select id="propertyType" required>
+      <option>Detached</option>
+      <option>Semi-detached</option>
+      <option>Terraced</option>
+      <option>Flat</option>
+      <option>Bungalow</option>
+    </select>
 
-            <!-- PROJECT TYPE -->
-            <label>Project Type *</label>
-            <select id="projectType" required>
-                <option value="">Select…</option>
-                <option value="rear">Rear extension</option>
-                <option value="side">Side extension</option>
-                <option value="wrap">Wrap-around extension</option>
-                <option value="porch">Porch / front extension</option>
-                <option value="loft">Loft conversion</option>
-                <option value="garage">Garage conversion</option>
-                <option value="two-storey">Two-storey extension</option>
-                <option value="garden-room">Garden room / outbuilding</option>
-                <option value="annexe">Annexe / outbuilding</option>
-                <option value="dormer">Dormer extension</option>
-            </select>
+    <label>Project Type *</label>
+    <select id="projectType" required>
+      <option>Rear extension</option>
+      <option>Side extension</option>
+      <option>Wrap-around extension</option>
+      <option>Loft conversion</option>
+      <option>Dormer extension</option>
+      <option>Garage conversion</option>
+      <option>Single-storey outbuilding</option>
+      <option>Two-storey outbuilding</option>
+      <option>Porch / front extension</option>
+      <option>Annex building</option>
+    </select>
 
-            <!-- DYNAMIC DIMENSION FIELDS -->
-            <div id="dimensionFields"></div>
+    <!-- Dynamic dimension fields -->
+    <div id="dimensionFields"></div>
 
-            <!-- AREA STATUS -->
-            <label>Area Designation *</label>
-            <select id="areaStatus" required>
-                <option value="">I’m not sure</option>
-                <option value="none">None of these apply</option>
-                <option value="conservation">Conservation Area</option>
-                <option value="national_park">National Park</option>
-                <option value="aonb">Area of Outstanding Natural Beauty (AONB)</option>
-                <option value="world_heritage">World Heritage Site</option>
-                <option value="sssi">SSSI (Site of Special Scientific Interest)</option>
-            </select>
+    <label>Area Status *</label>
+    <select id="areaStatus">
+      <option value="unknown">I'm not sure</option>
+      <option value="none">None of these apply</option>
+      <option value="conservation">Conservation area</option>
+      <option value="national_park">National park</option>
+      <option value="aonb">AONB</option>
+    </select>
 
-            <!-- PROPERTY STATUS -->
-            <label>Property Status *</label>
-            <select id="propertyStatus" required>
-                <option value="">I’m not sure</option>
-                <option value="none">Not listed</option>
-                <option value="listed">Listed building</option>
-                <option value="article4">Article 4 direction</option>
-            </select>
+    <label>Property Status *</label>
+    <select id="propertyStatus">
+      <option value="unknown">I'm not sure</option>
+      <option value="none">Not listed</option>
+      <option value="listed">Listed building</option>
+    </select>
 
-            <!-- PROJECT DESCRIPTION -->
-            <label>Project Description (optional)</label>
-            <textarea id="description" placeholder="Describe your project in your own words..."></textarea>
+    <label>Project Description (Optional)</label>
+    <textarea id="projectDescription" placeholder="Describe your proposal…"></textarea>
 
-            <!-- SUBMIT -->
-            <button type="submit" id="runCheckBtn">Run Feasibility Check</button>
+    <button type="submit" class="submit-btn">Run Feasibility Check</button>
+  </form>
+</div>
 
-        </form>
+<!-- RESULTS -->
+<div id="resultCard" class="result-card hidden">
+  <div id="spinner" class="spinner hidden">
+      <div></div><div></div><div></div>
+  </div>
+  <div id="resultContent"></div>
+</div>
 
-        <!-- RESULTS SECTION -->
-        <section id="results" class="results hidden">
-            <h2>Your Planning Feasibility Result</h2>
-            <div id="resultsContent"></div>
-        </section>
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer>
-        © Walker Planning • Scotland • 2025
-    </footer>
-
-    <!-- LOAD SCRIPT *AFTER* DOM -->
-    <script src="script.js"></script>
-
+<script src="script.js"></script>
 </body>
 </html>
