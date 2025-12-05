@@ -1,178 +1,139 @@
-/* -----------------------------------------
-   DYNAMIC DIMENSION RULES
------------------------------------------ */
-const dimensionRules = {
-  "Rear extension": ["projection", "height", "boundaryDistance"],
-  "Side extension": ["width", "height", "boundaryDistance"],
-  "Wrap-around extension": ["projection", "width", "height"],
-  "Porch / front extension": ["projection", "height"],
-  "Two-storey extension": ["projection", "height", "boundaryDistance"],
-  "Loft dormer extension": ["dormerVolume", "height"],
-  "Hip-to-gable roof extension": ["height"],
-  "Roof lights": ["projection"],
-  "Raising roof / ridge height": ["newRidge"],
-  "Single-storey outbuilding": ["footprint", "height"],
-  "Two-storey outbuilding": ["footprint", "height"],
-  "Garage conversion": [],
-  "Windows / doors": [],
-  "Solar panels": ["projection"],
-  "Fencing / gates": ["height"]
-};
-
-/* -----------------------------------------
+/* ============================================================
    DOM ELEMENTS
------------------------------------------ */
-const projectTypeSelect = document.getElementById("projectType");
-const dimensionFieldsContainer = document.getElementById("dimensionFields");
-const form = document.getElementById("planningForm");
+============================================================ */
+const form = document.getElementById("form");
 const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
 const spinner = document.getElementById("spinner");
 
-/* -----------------------------------------
-   RENDER DIMENSION FIELDS
------------------------------------------ */
+const projectTypeSelect = document.getElementById("projectType");
+const dimensionsFieldsContainer = document.getElementById("dimensionFieldsContainer");
+
+/* ============================================================
+   DYNAMIC DIMENSION RULES
+============================================================ */
+const dimensionRules = {
+  "Rear extension": ["projection", "height", "distance"],
+  "Side extension": ["width", "height", "projection"],
+  "Loft conversion": ["rearDormer", "volume"],
+  "Dormer": ["projection", "height"],
+  "Porch": ["projection", "height"],
+  "Garage conversion": [],
+  "Outbuilding": ["height", "area"],
+  "Wrap-around extension": ["projection", "sideWidth"],
+};
+
+/* ============================================================
+   RENDER DYNAMIC FIELDS
+============================================================ */
 function renderDimensionFields(projectType) {
+  dimensionsFieldsContainer.innerHTML = "";
   const fields = dimensionRules[projectType] || [];
-  dimensionFieldsContainer.innerHTML = "";
-
-  fields.forEach(field => {
-    let label = "";
-    let placeholder = "";
-    let type = "number";
-
-    switch (field) {
-      case "projection":
-        label = "Projection (m) *";
-        placeholder = "e.g., 3.5";
-        break;
-      case "width":
-        label = "Width (m) *";
-        placeholder = "e.g., 2.4";
-        break;
-      case "height":
-        label = "Height (m) *";
-        placeholder = "e.g., 3.2";
-        break;
-      case "boundaryDistance":
-        label = "Distance to nearest boundary (m) *";
-        placeholder = "e.g., 2";
-        break;
-      case "dormerVolume":
-        label = "Dormer volume (m³) *";
-        placeholder = "e.g., 40";
-        break;
-      case "newRidge":
-        label = "New ridge height (m) *";
-        placeholder = "e.g., 6.1";
-        break;
-      case "footprint":
-        label = "Footprint (m²) *";
-        placeholder = "e.g., 25";
-        break;
-      default:
-        label = field;
-    }
-
-    const wrapper = document.createElement("div");
-    wrapper.classList.add("dimension-item");
-
-    wrapper.innerHTML = `
-      <label>${label}</label>
-      <input 
-        type="${type}" 
-        step="0.1"
-        id="${field}" 
-        placeholder="${placeholder}" 
-        required>
-    `;
-
-    dimensionFieldsContainer.appendChild(wrapper);
+  fields.forEach(f => {
+    const label = f.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase());
+    const input = document.createElement("input");
+    input.type = "number";
+    input.step = "0.1";
+    input.min = "0";
+    input.id = f;
+    input.placeholder = label;
+    input.className = "dynamic-input";
+    dimensionsFieldsContainer.appendChild(input);
   });
 }
 
-// Initial load
-renderDimensionFields(projectTypeSelect.value);
+if (projectTypeSelect) {
+  projectTypeSelect.addEventListener("change", () => {
+    renderDimensionFields(projectTypeSelect.value);
+  });
+}
 
-// Update on change
-projectTypeSelect.addEventListener("change", () =>
-  renderDimensionFields(projectTypeSelect.value)
-);
-
-/* -----------------------------------------
-   SUBMIT HANDLER
------------------------------------------ */
+/* ============================================================
+   FORM SUBMISSION
+============================================================ */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Show card + loader
+  // Show loader immediately
   resultCard.classList.remove("hidden");
   spinner.classList.remove("hidden");
+  spinner.innerHTML = `<div class="dot-loader"><div></div><div></div><div></div></div>`;
   resultContent.innerHTML = "";
 
-  // Scroll to loader immediately
   resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  // Build payload
+  // BUILD PAYLOAD
   const payload = {
     postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value.trim(),
-    projectType: document.getElementById("projectType").value.trim(),
+    projectType: projectTypeSelect.value.trim(),
     areaStatus: document.getElementById("areaStatus").value.trim(),
     propertyStatus: document.getElementById("propertyStatus").value.trim(),
+    description: document.getElementById("description")?.value || "",
     dimensions: {}
   };
 
-  // Add dynamic dimension values
-  const rules = dimensionRules[payload.projectType] || [];
-  for (const field of rules) {
-    const el = document.getElementById(field);
-    if (!el || !el.value.trim()) {
-      spinner.classList.add("hidden");
-      resultContent.innerHTML =
-        "<p style='color:red;text-align:center;'>Missing required dimension fields.</p>";
-      return;
-    }
-    payload.dimensions[field] = el.value.trim();
-  }
+  const dimKeys = dimensionRules[payload.projectType] || [];
+  dimKeys.forEach(k => {
+    const el = document.getElementById(k);
+    if (el && el.value) payload.dimensions[k] = parseFloat(el.value);
+  });
 
-  /* -----------------------------------------
-     SEND TO WORKER
-  ----------------------------------------- */
+  // SEND TO WORKER
+  let response;
   try {
-    const res = await fetch(
-      "https://walker-planning-worker.emichops.workers.dev/",
+    response = await fetch(
+      "https://walker-planning-feasibility-tool.walkerplanning.workers.dev",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       }
     );
-
-    const data = await res.json();
-    spinner.classList.add("hidden");
-
-    if (data.error) {
-      resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
-      return;
-    }
-
-    // Build final report layout
-    resultContent.innerHTML = `
-      <div class="fade-in">
-        ${data.conclusion_html || ""}
-        ${data.summary_html || ""}
-        ${data.explanation_html || ""}
-        ${data.details_html || ""}
-      </div>
-    `;
-
-    // Scroll to result
-    resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
-
   } catch (err) {
     spinner.classList.add("hidden");
-    resultContent.innerHTML =
-      `<p style="color:red">Request failed: ${err.message}</p>`;
+    resultContent.innerHTML = `<p style="color:red">Network error.</p>`;
+    return;
   }
+
+  const data = await response.json();
+  spinner.classList.add("hidden");
+
+  // RENDER RESULT
+  resultContent.innerHTML = `
+    <div class="fade-in">
+
+      <div class="verdict-pill verdict-${data.score >= 70 ? "allowed" : data.score >= 40 ? "uncertain" : "refused"}">
+        ${data.verdict}
+      </div>
+
+      <h3>PD Confidence</h3>
+      <p><strong>${data.score}% likelihood</strong></p>
+
+      <h3>Summary</h3>
+      <p>This assessment is based on ${data.nation} PD rules and ${data.authority} planning context.</p>
+
+      <h3>Key Benefits</h3>
+      <ul>${data.benefits.map(b => `<li>${b}</li>`).join("")}</ul>
+
+      <h3>Key Risks</h3>
+      <ul>${data.risks.map(r => `<li>${r}</li>`).join("")}</ul>
+
+      <h3>Professional Assessment</h3>
+      <p>${data.assessment}</p>
+
+      <h3>Recommendation</h3>
+      <p>${data.recommendation}</p>
+
+      <h3>Location Context</h3>
+      <p><strong>Local Authority:</strong> ${data.authority}</p>
+      <p><strong>Nation:</strong> ${data.nation}</p>
+
+      <p class="disclaimer">
+        This automated tool provides an early feasibility review. Planning rules vary locally — confirm exact constraints with your local authority or a qualified planner.
+      </p>
+    </div>
+  `;
+
+  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 });
