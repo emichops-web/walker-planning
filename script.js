@@ -1,182 +1,94 @@
-/* ------------------------------
-   DOM ELEMENTS
------------------------------- */
-const projectTypeSelect = document.getElementById("projectType");
-const dimensionFieldsContainer = document.getElementById("dimensionFieldsContainer");
-const form = document.getElementById("planningForm");
-const resultCard = document.getElementById("resultCard");
-const resultContent = document.getElementById("resultContent");
-const spinner = document.getElementById("spinner");
-
-let resultLocked = false;
-
-/* ------------------------------
-   PROJECT TYPE → DIMENSION RULES
-   (Restored full version)
------------------------------- */
+// ======================
+// DIMENSION RULES
+// ======================
 const dimensionRules = {
-  "Rear extension": ["projection", "height", "boundary"],
-  "Side extension": ["projection", "height", "boundary"],
-  "Wrap-around extension": ["projection", "height", "boundary"],
-  "Porch / front extension": ["projection", "height"],
-  "Loft conversion": ["height"],
-  "Dormer extension": ["height", "projection"],
-  "Garage conversion": [],
-  "Two-storey extension": ["projection", "height", "boundary"],
-  "Garden room / outbuilding": ["projection", "height", "boundary"],
-  "Annex / ancillary accommodation": ["projection", "height", "boundary"]
+    "Rear extension": ["Projection (m)", "Height (m)", "Distance to boundary (m)"],
+    "Side extension": ["Projection (m)", "Height (m)", "Distance to boundary (m)"],
+    "Wrap-around extension": ["Rear projection (m)", "Side projection (m)", "Height (m)"],
+    "Porch / front extension": ["Projection (m)", "Height (m)", "Width (m)"],
+    "Loft conversion": [],
+    "Dormer extension": ["Projection (m)", "Height (m)"],
+    "Garage conversion": [],
+    "Two-storey extension": ["Projection (m)", "Height (m)", "Distance to boundary (m)"],
+    "Garden room / outbuilding": ["Footprint (m²)", "Height (m)"],
+    "Annexe / outbuilding": ["Footprint (m²)", "Height (m)"]
 };
 
-/* ------------------------------
-   RENDER DYNAMIC FIELDS
------------------------------- */
-function renderDimensionFields() {
-  if (resultLocked) return;
-  const fields = dimensionRules[projectTypeSelect.value] || [];
-  dimensionFieldsContainer.innerHTML = "";
+// ======================
+// RENDER DIMENSION INPUTS
+// ======================
+function renderDimensionFields(projectType) {
+    const container = document.getElementById("dimensionFields");
+    if (!container) return; // fail safe
 
-  fields.forEach(field => {
-    let label = "";
-    let placeholder = "";
-    let type = "number";
+    container.innerHTML = "";
 
-    if (field === "projection") {
-      label = "Projection (m)";
-      placeholder = "e.g., 3";
-    } else if (field === "height") {
-      label = "Height (m)";
-      placeholder = "e.g., 3";
-    } else if (field === "boundary") {
-      label = "Distance to nearest boundary (m)";
-      placeholder = "e.g., 2";
-    }
+    const fields = dimensionRules[projectType] || [];
+    if (fields.length === 0) return; // nothing to render
 
-    dimensionFieldsContainer.insertAdjacentHTML(
-      "beforeend",
-      `
-        <div class="form-group">
-          <label>${label} *</label>
-          <input type="${type}" id="${field}" placeholder="${placeholder}" step="0.1" required />
-        </div>
-      `
-    );
-  });
+    fields.forEach(label => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "dimension-field";
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.step = "0.1";
+        input.min = "0";
+        input.placeholder = label;
+
+        wrapper.appendChild(input);
+        container.appendChild(wrapper);
+    });
 }
 
-/* ------------------------------
-   ON PROJECT TYPE CHANGE
------------------------------- */
-projectTypeSelect.addEventListener("change", () => {
-  renderDimensionFields();
+// ======================
+// EVENT LISTENER
+// ======================
+document.getElementById("projectType")?.addEventListener("change", (e) => {
+    renderDimensionFields(e.target.value);
 });
 
-/* ------------------------------
-   FORM SUBMISSION
------------------------------- */
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  resultLocked = true;
-
-  // Show result card + loader
-  resultCard.classList.remove("hidden");
-  spinner.classList.remove("hidden");
-  spinner.innerHTML = `
-    <div class="loader">
-      <div></div><div></div><div></div>
-    </div>
-  `;
-
-  resultContent.innerHTML = "";
-  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
-
-  // Build payload
-  const payload = {
-    postcode: document.getElementById("postcode").value.trim(),
-    propertyType: document.getElementById("propertyType").value.trim(),
-    projectType: projectTypeSelect.value.trim(),
-    areaStatus: document.getElementById("areaStatus").value.trim(),
-    propertyStatus: document.getElementById("propertyStatus").value.trim(),
-    description: document.getElementById("description").value.trim(),
-    dimensions: {}
-  };
-
-  const dimList = dimensionRules[payload.projectType] || [];
-  dimList.forEach(f => {
-    const el = document.getElementById(f);
-    payload.dimensions[f] = el ? el.value : null;
-  });
-
-  // Send request
-  let response;
-  try {
-    response = await fetch("https://walker-planning-worker.emichops.workers.dev", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+// ======================
+// RUN CHECK HANDLER
+// ======================
+document.getElementById("runCheckBtn")?.addEventListener("click", async () => {
+    const postcode = document.getElementById("postcode").value.trim();
+    const propertyType = document.getElementById("propertyType").value.trim();
+    const projectType = document.getElementById("projectType").value.trim();
+    const areaStatus = document.getElementById("areaStatus").value.trim();
+    const propertyStatus = document.getElementById("propertyStatus").value.trim();
+    const description = document.getElementById("description").value.trim();
+    
+    const dims = {};
+    document.querySelectorAll("#dimensionFields input").forEach((input, i) => {
+        dims[`dim${i+1}`] = input.value.trim();
     });
-  } catch (err) {
-    spinner.classList.add("hidden");
-    resultContent.innerHTML = "<p>Network error — please try again.</p>";
-    return;
-  }
 
-  spinner.classList.add("hidden");
+    const payload = {
+        postcode,
+        propertyType,
+        projectType,
+        areaStatus,
+        propertyStatus,
+        description,
+        dimensions: dims
+    };
 
-  let data;
-  try {
-    data = await response.json();
-  } catch (err) {
-    resultContent.innerHTML = "<p>Invalid server response.</p>";
-    return;
-  }
+    const resultsBox = document.getElementById("resultsBox");
+    resultsBox.innerHTML = "<div class='loader'>● ● ●</div>";
 
-  if (data.error) {
-    resultContent.innerHTML = `<p>${data.error}</p>`;
-    return;
-  }
+    try {
+        const res = await fetch("https://walker-planning-worker.emichops.workers.dev", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
 
-  // Likelihood bar
-  const likelihoodBar = `
-    <div class="likelihood-bar">
-      <div class="likelihood-fill" style="width:${data.score}%"></div>
-      <span class="likelihood-label">${data.score}% likelihood</span>
-    </div>
-  `;
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
 
-  // Render result
-  resultContent.innerHTML = `
-    <h3 class="verdict-pill">${data.verdict}</h3>
-
-    ${likelihoodBar}
-
-    <p>${data.assessment}</p>
-
-    <h3>Potential Positive Factors</h3>
-    <ul>
-      ${data.positives.length ? data.positives.map(p => `<li>${p}</li>`).join("") : "<li>No specific positive indicators noted.</li>"}
-    </ul>
-
-    <h3>Key Risks</h3>
-    <ul>
-      ${data.risks.length ? data.risks.map(r => `<li>${r}</li>`).join("") : "<li>No major risks identified.</li>"}
-    </ul>
-
-    <h3>Professional Assessment</h3>
-    <p>${data.professional}</p>
-
-    <h3>Recommendation</h3>
-    <p>${data.recommendation}</p>
-
-    <h3>Location Context</h3>
-    <p><strong>Town:</strong> ${data.town}</p>
-    <p><strong>Local Authority:</strong> ${data.authority}</p>
-    <p><strong>Nation:</strong> ${data.nation}</p>
-
-    <p class="disclaimer">
-      This automated assessment provides an initial indication only.
-      Walker Planning can provide a formal planning appraisal if required.
-    </p>
-  `;
-
-  resultLocked = false;
+        resultsBox.innerHTML = data.html || "<p>Unexpected response format.</p>";
+    } catch (err) {
+        resultsBox.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+    }
 });
