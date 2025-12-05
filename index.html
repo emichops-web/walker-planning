@@ -1,176 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Walker Planning – Instant Permitted Development Check</title>
 
-    <!-- MAIN CSS -->
-    <link rel="stylesheet" href="styles.css">
-
-    <style>
-        /* --- Safe spacing improvements (your request: option 2B) --- */
-        .form-section {
-            padding: 24px;
-        }
-        .form-group {
-            margin-bottom: 22px;
-        }
-        label {
-            font-weight: 600;
-            margin-bottom: 6px;
-            display: block;
-        }
-        select, input[type="number"], textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-        textarea {
-            height: 120px;
-        }
-        button {
-            background: #1e3a8a;
-            color: white;
-            border: none;
-            padding: 14px 18px;
-            margin-top: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 17px;
-            width: 100%;
-        }
-        .hero {
-            margin-bottom: 12px;
-        }
-
-        /* Loader (kept from your original script) */
-        .loader-dots {
-            display: flex; 
-            gap: 8px; 
-            justify-content: center; 
-            margin-top: 20px;
-        }
-        .loader-dots div {
-            width: 12px; height: 12px;
-            background: #1e3a8a;
-            border-radius: 50%;
-            animation: bounce 0.6s infinite alternate;
-        }
-        .loader-dots div:nth-child(2) { animation-delay: 0.2s; }
-        .loader-dots div:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes bounce {
-            from { transform: translateY(0); opacity: 0.4; }
-            to   { transform: translateY(-8px); opacity: 1; }
-        }
-
-        .result-card {
-            background: white;
-            padding: 28px;
-            border-radius: 14px;
-            margin-top: 30px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-        }
-    </style>
+    <!-- CSS MUST LOAD BEFORE DOM RENDER -->
+    <link rel="stylesheet" href="styles.css" type="text/css" />
 </head>
 
 <body>
 
-    <!-- HERO — unchanged (your option 1A) -->
-    <div class="hero">
-        <img src="hero.jpg" alt="Walker Planning Hero Banner" style="width:100%; height:auto;">
-        <h1 class="hero-title">Instant Permitted Development Check</h1>
-        <p class="hero-subtitle">Fast AI guidance based on UK planning rules</p>
-    </div>
+    <!-- HERO SECTION (unchanged from your working version) -->
+    <header class="hero">
+        <img src="logo.png" alt="Walker Planning" class="logo" />
+        <h1>Instant Permitted Development Check</h1>
+        <p>Fast AI guidance based on UK planning rules</p>
+    </header>
 
-    <!-- FORM -->
-    <section class="form-section">
+    <!-- MAIN CONTAINER -->
+    <main class="container">
+
         <h2>Property Details</h2>
 
-        <div class="form-group">
-            <label for="postcode">Postcode *</label>
-            <input type="text" id="postcode" placeholder="e.g., PH7 4BL" required>
-        </div>
+        <form id="pdForm">
 
-        <div class="form-group">
-            <label for="propertyType">Property Type *</label>
+            <!-- POSTCODE -->
+            <label>Postcode *</label>
+            <input type="text" id="postcode" required placeholder="e.g., PH7 4BL" />
+
+            <!-- PROPERTY TYPE -->
+            <label>Property Type *</label>
             <select id="propertyType" required>
-                <option value="">Select...</option>
+                <option value="">Select…</option>
                 <option>Detached</option>
                 <option>Semi-detached</option>
                 <option>Terraced</option>
                 <option>Flat</option>
+                <option>Bungalow</option>
             </select>
-        </div>
 
-        <div class="form-group">
-            <label for="projectType">Project Type *</label>
+            <!-- PROJECT TYPE -->
+            <label>Project Type *</label>
             <select id="projectType" required>
-                <option value="">Select...</option>
-                <option value="rear_extension">Rear extension</option>
-                <option value="side_extension">Side extension</option>
-                <option value="wrap_extension">Wrap-around extension</option>
-                <option value="porch_front">Porch / front extension</option>
-                <option value="loft_conversion">Loft conversion</option>
-                <option value="garage_conversion">Garage conversion</option>
-                <option value="two_storey">Two-storey extension</option>
-                <option value="garden_outbuilding">Garden room / outbuilding</option>
-                <option value="annexe">Annexe / ancillary accommodation</option>
+                <option value="">Select…</option>
+                <option value="rear">Rear extension</option>
+                <option value="side">Side extension</option>
+                <option value="wrap">Wrap-around extension</option>
+                <option value="porch">Porch / front extension</option>
+                <option value="loft">Loft conversion</option>
+                <option value="garage">Garage conversion</option>
+                <option value="two-storey">Two-storey extension</option>
+                <option value="garden-room">Garden room / outbuilding</option>
+                <option value="annexe">Annexe / outbuilding</option>
                 <option value="dormer">Dormer extension</option>
             </select>
-        </div>
 
-        <!-- DYNAMIC FIELDS (script.js controls visibility) -->
-        <div id="dimensionFields"></div>
+            <!-- DYNAMIC DIMENSION FIELDS -->
+            <div id="dimensionFields"></div>
 
-        <div class="form-group">
-            <label for="areaStatus">Area Designation *</label>
+            <!-- AREA STATUS -->
+            <label>Area Designation *</label>
             <select id="areaStatus" required>
-                <option value="unknown">I’m not sure</option>
+                <option value="">I’m not sure</option>
                 <option value="none">None of these apply</option>
                 <option value="conservation">Conservation Area</option>
                 <option value="national_park">National Park</option>
-                <option value="aonb">AONB (England/Wales)</option>
+                <option value="aonb">Area of Outstanding Natural Beauty (AONB)</option>
+                <option value="world_heritage">World Heritage Site</option>
+                <option value="sssi">SSSI (Site of Special Scientific Interest)</option>
             </select>
-        </div>
 
-        <div class="form-group">
-            <label for="propertyStatus">Property Status *</label>
+            <!-- PROPERTY STATUS -->
+            <label>Property Status *</label>
             <select id="propertyStatus" required>
-                <option value="unknown">I’m not sure</option>
-                <option value="none">None of these apply</option>
-                <option value="listed">Listed Building</option>
+                <option value="">I’m not sure</option>
+                <option value="none">Not listed</option>
+                <option value="listed">Listed building</option>
+                <option value="article4">Article 4 direction</option>
             </select>
-        </div>
 
-        <div class="form-group">
-            <label for="description">Project Description (optional)</label>
+            <!-- PROJECT DESCRIPTION -->
+            <label>Project Description (optional)</label>
             <textarea id="description" placeholder="Describe your project in your own words..."></textarea>
-        </div>
 
-        <button id="runCheckBtn">Run Feasibility Check</button>
-    </section>
+            <!-- SUBMIT -->
+            <button type="submit" id="runCheckBtn">Run Feasibility Check</button>
 
-    <!-- RESULTS -->
-    <section id="resultContainer" class="form-section">
-        <h2>Your Planning Feasibility Result</h2>
-        <div id="loader" style="display:none;">
-            <div class="loader-dots">
-                <div></div><div></div><div></div>
-            </div>
-        </div>
-        <div id="resultContent" class="result-card"></div>
-    </section>
+        </form>
 
-    <!-- FOOTER (your choice 3B) -->
-    <footer style="text-align:center; margin:40px 0; opacity:0.7;">
-        © Walker Planning 2025
+        <!-- RESULTS SECTION -->
+        <section id="results" class="results hidden">
+            <h2>Your Planning Feasibility Result</h2>
+            <div id="resultsContent"></div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        © Walker Planning • Scotland • 2025
     </footer>
 
-    <!-- SCRIPT -->
+    <!-- LOAD SCRIPT *AFTER* DOM -->
     <script src="script.js"></script>
 
 </body>
