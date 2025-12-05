@@ -1,95 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Walker Planning – Permitted Development Checker</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Instant Permitted Development Check</title>
+
+    <!-- Correct stylesheet reference -->
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+    <header class="header">
+        <div class="header-content">
+            <img src="logo.png" class="logo" />
+            <img src="hero.jpg" class="hero-image" />
+            <h1>Instant Permitted Development Check</h1>
+            <p>Fast AI guidance based on UK planning rules</p>
+        </div>
+    </header>
 
-<!-- Sticky Header -->
-<header class="top-bar">
-  <img src="logo.png" class="top-logo" alt="Walker Planning">
-</header>
+    <main>
+        <section class="form-section">
+            <div class="form-card">
+                <h2>Property Details</h2>
 
-<!-- HERO SECTION -->
-<section class="hero-section">
-  <div class="hero-left">
-    <img src="hero.png" class="hero-image" alt="House extension">
-  </div>
-  <div class="hero-right">
-    <h1>Instant Permitted Development Check</h1>
-    <p>Fast AI guidance using UK planning rules</p>
-  </div>
-</section>
+                <label>Postcode *</label>
+                <input id="postcode" type="text" placeholder="e.g., PH7 4BL" />
 
-<!-- FORM WRAPPER -->
-<div class="form-wrapper">
+                <label>Property Type *</label>
+                <select id="propertyType">
+                    <option value="">Select...</option>
+                    <option>Detached</option>
+                    <option>Semi-detached</option>
+                    <option>Terraced</option>
+                    <option>Flat</option>
+                </select>
 
-  <form id="planningForm" class="form-card">
+                <label>Project Type *</label>
+                <select id="projectType">
+                    <option value="">Select...</option>
+                    <option>Rear extension</option>
+                    <option>Side extension</option>
+                    <option>Wrap-around extension</option>
+                    <option>Porch / front extension</option>
+                    <option>Loft conversion</option>
+                    <option>Garage conversion</option>
+                    <option>Two-storey extension</option>
+                    <option>Garden room / outbuilding</option>
+                    <option>Dormer extension</option>
+                    <option>Annexe / outbuilding</option>
+                </select>
 
-    <label>Postcode *</label>
-    <input id="postcode" type="text" placeholder="e.g., PH7 4BL" required>
+                <div id="dimensionFields"></div>
 
-    <label>Property Type *</label>
-    <select id="propertyType" required>
-      <option>Detached</option>
-      <option>Semi-detached</option>
-      <option>Terraced</option>
-      <option>Flat</option>
-      <option>Bungalow</option>
-    </select>
+                <label>Area Status *</label>
+                <select id="areaStatus">
+                    <option value="unknown">I'm not sure</option>
+                    <option value="none">None of these apply</option>
+                    <option value="conservation">Conservation Area</option>
+                    <option value="national_park">National Park</option>
+                    <option value="aonb">AONB</option>
+                </select>
 
-    <label>Project Type *</label>
-    <select id="projectType" required>
-      <option>Rear extension</option>
-      <option>Side extension</option>
-      <option>Wrap-around extension</option>
-      <option>Loft conversion</option>
-      <option>Dormer extension</option>
-      <option>Garage conversion</option>
-      <option>Single-storey outbuilding</option>
-      <option>Two-storey outbuilding</option>
-      <option>Porch / front extension</option>
-      <option>Annex building</option>
-    </select>
+                <label>Property Status *</label>
+                <select id="propertyStatus">
+                    <option value="unknown">I'm not sure</option>
+                    <option value="none">Not listed</option>
+                    <option value="listed">Listed property</option>
+                </select>
 
-    <!-- Dynamic dimension fields -->
-    <div id="dimensionFields"></div>
+                <label>Project Description (Optional)</label>
+                <textarea id="description" placeholder="Describe your proposal..."></textarea>
 
-    <label>Area Status *</label>
-    <select id="areaStatus">
-      <option value="unknown">I'm not sure</option>
-      <option value="none">None of these apply</option>
-      <option value="conservation">Conservation area</option>
-      <option value="national_park">National park</option>
-      <option value="aonb">AONB</option>
-    </select>
+                <button id="runCheckBtn">Run Feasibility Check</button>
+            </div>
+        </section>
 
-    <label>Property Status *</label>
-    <select id="propertyStatus">
-      <option value="unknown">I'm not sure</option>
-      <option value="none">Not listed</option>
-      <option value="listed">Listed building</option>
-    </select>
+        <section class="results-section">
+            <h2>Your Planning Feasibility Result</h2>
+            <div id="resultsBox"></div>
+        </section>
+    </main>
 
-    <label>Project Description (Optional)</label>
-    <textarea id="projectDescription" placeholder="Describe your proposal…"></textarea>
+    <footer>
+        © Walker Planning • Scotland • 2025
+    </footer>
 
-    <button type="submit" class="submit-btn">Run Feasibility Check</button>
-  </form>
-</div>
-
-<!-- RESULTS -->
-<div id="resultCard" class="result-card hidden">
-  <div id="spinner" class="spinner hidden">
-      <div></div><div></div><div></div>
-  </div>
-  <div id="resultContent"></div>
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
