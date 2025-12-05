@@ -46,13 +46,16 @@ document.getElementById("runCheck").addEventListener("click", async () => {
         dimensions: {}
     };
 
-    if (document.getElementById("projection")) {
-    payload.dimensions = {
-        projection: parseFloat(document.getElementById("projection").value) || 0,
-        height: parseFloat(document.getElementById("height").value) || 0,
-        boundary: parseFloat(document.getElementById("boundary").value) || 0
-    };
-}
+   // Collect dimensions if inputs exist
+const projEl = document.getElementById("projection");
+const heightEl = document.getElementById("height");
+const boundaryEl = document.getElementById("boundary");
+
+payload.dimensions = {
+    projection: projEl ? parseFloat(projEl.value) || 0 : 0,
+    height: heightEl ? parseFloat(heightEl.value) || 0 : 0,
+    boundary: boundaryEl ? parseFloat(boundaryEl.value) || 0 : 0
+};
 
     const res = await fetch("https://walker-planning-worker.emichops.workers.dev", {
         method: "POST",
