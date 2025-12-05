@@ -17,17 +17,17 @@ projectType.addEventListener("change", () => {
     ];
 
     if (needsDims.includes(type)) {
-        html = `
-            <label>Projection (m)</label>
-            <input id="dim-proj" type="number" step="0.1" />
+    html = `
+        <label>Projection (m)</label>
+        <input id="projection" type="number" step="0.1" />
 
-            <label>Height (m)</label>
-            <input id="dim-height" type="number" step="0.1" />
+        <label>Height (m)</label>
+        <input id="height" type="number" step="0.1" />
 
-            <label>Nearest boundary distance (m)</label>
-            <input id="dim-boundary" type="number" step="0.1" />
-        `;
-    }
+        <label>Nearest boundary distance (m)</label>
+        <input id="boundary" type="number" step="0.1" />
+    `;
+}
 
     dimensionFields.innerHTML = html;
 });
@@ -46,13 +46,13 @@ document.getElementById("runCheck").addEventListener("click", async () => {
         dimensions: {}
     };
 
-    if (document.getElementById("dim-proj")) {
-        payload.dimensions = {
-            projection: parseFloat(document.getElementById("dim-proj").value) || 0,
-            height: parseFloat(document.getElementById("dim-height").value) || 0,
-            boundary: parseFloat(document.getElementById("dim-boundary").value) || 0
-        };
-    }
+    if (document.getElementById("projection")) {
+    payload.dimensions = {
+        projection: parseFloat(document.getElementById("projection").value) || 0,
+        height: parseFloat(document.getElementById("height").value) || 0,
+        boundary: parseFloat(document.getElementById("boundary").value) || 0
+    };
+}
 
     const res = await fetch("https://walker-planning-worker.emichops.workers.dev", {
         method: "POST",
