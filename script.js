@@ -118,7 +118,7 @@ form.addEventListener("submit", async (e) => {
     postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value.trim(),
     projectType: projectTypeSelect.value.trim(),
-    areaStatus: document.getElementById("areaStatus").value.trim(),
+    areaStatus: document.getElementById("areaDesignation").value.trim(),
     propertyStatus: document.getElementById("propertyStatus").value.trim(),
     description: document.getElementById("description")?.value || "",
     dimensions: {}
