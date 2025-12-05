@@ -171,27 +171,41 @@ form.addEventListener("submit", async (e) => {
     }
 
     /* -------- Render result -------- */
-    resultContent.innerHTML = `
-      <div class="fade-in">
+    /* -------- Render result -------- */
+resultContent.innerHTML = `
+  <div class="fade-in">
 
-        ${data.conclusion_html || ""}
+    ${data.verdict ? `<div class="verdict-pill">${data.verdict}</div>` : ""}
 
-        <p>${data.summary_html || ""}</p>
+    <h3>PD Likelihood:</h3>
+    <p><strong>${data.pdScore}% confidence</strong></p>
 
-        <h3>PD Likelihood:</h3>
-        <p><strong>${data.pdScore}% confidence</strong></p>
+    ${data.summary ? `<p>${data.summary}</p>` : ""}
 
-        ${data.explanation_html || ""}
+    ${data.assessment ? `<p>${data.assessment}</p>` : ""}
 
-        <h3>Risk Factors</h3>
-        ${data.details_html || ""}
+    <h3>Risk Factors</h3>
+    <ul>
+      ${
+        data.riskFactors && data.riskFactors.length
+          ? data.riskFactors.map(r => `<li>${r}</li>`).join("")
+          : "<li>No major risks identified.</li>"
+      }
+    </ul>
 
-        <p style="margin-top:20px;font-size:0.9rem;opacity:0.7;">
-          <strong>Disclaimer:</strong> This automated tool provides a general overview only.
-          Always confirm constraints with your local authority or a qualified planner.
-        </p>
-      </div>
-    `;
+    <h3>Constraint Interpretation</h3>
+    <p><strong>Area:</strong> ${data.constraints?.area || "Unknown"}</p>
+    <p><strong>Property status:</strong> ${data.constraints?.property || "Unknown"}</p>
+    <p><strong>Local Authority:</strong> ${data.constraints?.authority || "Unknown"}</p>
+    <p><strong>Nation:</strong> ${data.constraints?.nation || "Unknown"}</p>
+
+    <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
+      <strong>Disclaimer:</strong> This automated tool provides a general overview only.
+      Planning rules vary locally — always confirm constraints with your local authority or a qualified planner.
+    </p>
+
+  </div>
+`;
 
     // Final scroll to result
     resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
