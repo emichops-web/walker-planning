@@ -1,80 +1,64 @@
-/* ---------------------------------------------------------
+/* =========================================================================
    DOM ELEMENTS
---------------------------------------------------------- */
+=========================================================================== */
 const form = document.getElementById("planningForm");
-const projectTypeSelect = document.getElementById("projectType");
-const dimensionFieldsContainer = document.getElementById("dimensionFields");
 const resultCard = document.getElementById("resultCard");
 const resultContent = document.getElementById("resultContent");
 const spinner = document.getElementById("spinner");
 
-/* ---------------------------------------------------------
-   DYNAMIC DIMENSION RULES
---------------------------------------------------------- */
+const projectTypeSelect = document.getElementById("projectType");
+const dimensionFieldsContainer = document.getElementById("dimensionFields");
+
+
+/* =========================================================================
+   DYNAMIC DIMENSION FIELDS
+=========================================================================== */
 const dimensionRules = {
-  "Rear extension": ["projection", "height", "boundary"],
-  "Side extension": ["width", "height", "boundary"],
-  "Wrap-around extension": ["projection", "width", "height", "boundary"],
-  "Garden room": ["footprint", "height", "boundary"],
-  "Loft dormer extension": ["dormerVolume", "height"],
+  "Rear extension": ["projection", "height", "boundaryDistance"],
+  "Side extension": ["width", "height", "boundaryDistance"],
+  "Wrap-around extension": ["projection", "width", "height"],
   "Porch / front extension": ["projection", "height"],
-  "Garage conversion": [],
+  "Two-storey extension": ["projection", "height", "boundaryDistance"],
+  "Loft dormer extension": ["dormerVolume", "height"],
+  "Hip-to-gable roof extension": ["height"],
+  "Roof lights": ["projection"],
   "Raising roof / ridge height": ["newRidge"],
+  "Single-storey outbuilding": ["footprint", "height"],
+  "Two-storey outbuilding": ["footprint", "height"],
+  "Garage conversion": [],
+  "Windows / doors": [],
   "Solar panels": ["projection"],
+  "Fencing / gates": ["height"]
 };
 
-/* ---------------------------------------------------------
-   RENDER DIMENSION FIELDS BASED ON PROJECT TYPE
---------------------------------------------------------- */
 function renderDimensionFields(type) {
-  const fields = dimensionRules[type] || [];
   dimensionFieldsContainer.innerHTML = "";
+  const fields = dimensionRules[type] || [];
 
   fields.forEach(field => {
     let label = "";
     let placeholder = "";
-    let unit = "(m)";
+    let step = "0.1";
 
     switch (field) {
-      case "projection":
-        label = "Projection " + unit;
-        placeholder = "e.g., 3.5";
-        break;
-      case "width":
-        label = "Width " + unit;
-        placeholder = "e.g., 2.5";
-        break;
-      case "height":
-        label = "Height " + unit;
-        placeholder = "e.g., 3.0";
-        break;
-      case "boundary":
-        label = "Distance to boundary " + unit;
-        placeholder = "e.g., 2";
-        break;
-      case "footprint":
-        label = "Footprint (m²)";
-        placeholder = "e.g., 25";
-        break;
-      case "dormerVolume":
-        label = "Dormer volume (m³)";
-        placeholder = "e.g., 40";
-        break;
-      case "newRidge":
-        label = "New ridge height " + unit;
-        placeholder = "e.g., 6.2";
-        break;
+      case "projection": label = "Projection (m)"; placeholder = "e.g., 3"; break;
+      case "width":      label = "Width (m)"; placeholder = "e.g., 2.5"; break;
+      case "height":     label = "Height (m)"; placeholder = "e.g., 3"; break;
+      case "boundaryDistance": label = "Distance to boundary (m)"; placeholder = "e.g., 2"; break;
+      case "dormerVolume":     label = "Dormer volume (m³)"; placeholder = "e.g., 40"; step = "1"; break;
+      case "newRidge":         label = "New ridge height (m)"; placeholder = "e.g., 6.2"; break;
+      case "footprint":        label = "Footprint (m²)"; placeholder = "e.g., 25"; step = "1"; break;
     }
 
     const wrapper = document.createElement("div");
-    wrapper.classList.add("dimension-item");
+    wrapper.className = "dimension-item";
     wrapper.innerHTML = `
       <label>${label}</label>
       <input 
         type="number" 
-        step="0.1"
         id="${field}" 
         placeholder="${placeholder}" 
+        step="${step}"
         required
       >
     `;
@@ -82,136 +66,148 @@ function renderDimensionFields(type) {
   });
 }
 
-// Initialize fields on load
 renderDimensionFields(projectTypeSelect.value);
-
-// Update on project type change
 projectTypeSelect.addEventListener("change", () => {
   renderDimensionFields(projectTypeSelect.value);
 });
 
 
-/* ---------------------------------------------------------
+/* =========================================================================
    SUBMIT HANDLER
---------------------------------------------------------- */
+=========================================================================== */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Show result card + loader immediately
+  // Show card + loader
   resultCard.classList.remove("hidden");
   spinner.classList.remove("hidden");
-  spinner.innerHTML = `
-    <div class="dot-loader">
-      <div></div><div></div><div></div>
-    </div>
-  `;
   resultContent.innerHTML = "";
-
-  // Auto-scroll to loader
+  
+  // Scroll immediately
   resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  /* -------- Build payload -------- */
+  /* -------------------------
+     Build payload
+  ------------------------- */
   const payload = {
     postcode: document.getElementById("postcode").value.trim(),
     propertyType: document.getElementById("propertyType").value.trim(),
     projectType: document.getElementById("projectType").value.trim(),
     areaStatus: document.getElementById("areaDesignation").value.trim(),
     propertyStatus: document.getElementById("propertyStatus").value.trim(),
-    description: document.getElementById("projectDescription").value.trim(),
+    projectDescription: document.getElementById("projectDescription").value.trim(),
     dimensions: {}
   };
 
-  // Validate postcode
-  const pc = payload.postcode;
-  const postcodePattern = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
-
-  if (!postcodePattern.test(pc)) {
-    spinner.classList.add("hidden");
-    resultContent.innerHTML = `
-      <p style="color:red; text-align:center;">
-        Please enter a valid UK postcode.
-      </p>
-    `;
-    return;
-  }
-
-  // Add dynamic dimension fields
-  const dimList = dimensionRules[payload.projectType] || [];
-  for (const field of dimList) {
+  // Add dynamic dimensions
+  const rules = dimensionRules[payload.projectType] || [];
+  for (const field of rules) {
     const el = document.getElementById(field);
     if (!el || !el.value.trim()) {
       spinner.classList.add("hidden");
-      resultContent.innerHTML = `
-        <p style="color:red;text-align:center">
-          Missing required dimension: <strong>${field}</strong>
-        </p>`;
+      resultContent.innerHTML = "<p style='color:red;text-align:center'>Missing required dimensions.</p>";
       return;
     }
     payload.dimensions[field] = el.value.trim();
   }
 
-  /* -------- Send to Worker -------- */
+  /* -------------------------
+     Send to Worker
+  ------------------------- */
   try {
-    const res = await fetch(
-      "https://walker-planning-worker.emichops.workers.dev/",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }
-    );
+    const response = await fetch("https://walker-planning-worker.emichops.workers.dev/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-    const data = await res.json();
-
+    const data = await response.json();
     spinner.classList.add("hidden");
 
     if (data.error) {
-      resultContent.innerHTML = `<p style="color:red">${data.error}</p>`;
+      resultContent.innerHTML = `<p style='color:red'>${data.error}</p>`;
       return;
     }
 
-    /* -------- Render result -------- */
-    /* -------- Render result -------- */
-resultContent.innerHTML = `
-  <div class="fade-in">
+    /* ---------------------------------------------------------------
+       FORMAT THE NEW STRUCTURED RESULTS (Option B)
+    ---------------------------------------------------------------- */
+    const { 
+      verdict, 
+      headline, 
+      confidence,
+      executiveSummary,
+      keyBenefits = [],
+      keyRisks = [],
+      professionalAssessment,
+      recommendation,
+      location = {},
+      flags = {}
+    } = data;
 
-    ${data.verdict ? `<div class="verdict-pill">${data.verdict}</div>` : ""}
+    const verdictClass =
+      verdict === "allowed" ? "verdict-allowed" :
+      verdict === "refused" ? "verdict-refused" :
+      "verdict-uncertain";
 
-    <h3>PD Likelihood:</h3>
-    <p><strong>${data.pdScore}% confidence</strong></p>
+    resultContent.innerHTML = `
+      <div class="fade-in">
 
-    ${data.summary ? `<p>${data.summary}</p>` : ""}
+        <div class="verdict-pill ${verdictClass}">
+          ${headline}
+        </div>
 
-    ${data.assessment ? `<p>${data.assessment}</p>` : ""}
+        <h3>PD Confidence</h3>
+        <p><strong>${confidence}% likelihood</strong></p>
 
-    <h3>Risk Factors</h3>
-    <ul>
-      ${
-        data.riskFactors && data.riskFactors.length
-          ? data.riskFactors.map(r => `<li>${r}</li>`).join("")
-          : "<li>No major risks identified.</li>"
-      }
-    </ul>
+        <h3>Summary</h3>
+        <p>${executiveSummary}</p>
 
-    <h3>Constraint Interpretation</h3>
-    <p><strong>Area:</strong> ${data.constraints?.area || "Unknown"}</p>
-    <p><strong>Property status:</strong> ${data.constraints?.property || "Unknown"}</p>
-    <p><strong>Local Authority:</strong> ${data.constraints?.authority || "Unknown"}</p>
-    <p><strong>Nation:</strong> ${data.constraints?.nation || "Unknown"}</p>
+        <h3>Key Benefits</h3>
+        <ul>
+          ${keyBenefits.map(b => `<li>${b}</li>`).join("")}
+        </ul>
 
-    <p style="margin-top:20px;font-size:0.9rem;opacity:0.8;">
-      <strong>Disclaimer:</strong> This automated tool provides a general overview only.
-      Planning rules vary locally — always confirm constraints with your local authority or a qualified planner.
-    </p>
+        <h3>Key Risks</h3>
+        <ul>
+          ${
+            keyRisks.length
+              ? keyRisks.map(r => `<li>${r}</li>`).join("")
+              : "<li>No significant risks identified.</li>"
+          }
+        </ul>
 
-  </div>
-`;
+        <h3>Professional Assessment</h3>
+        <p>${professionalAssessment}</p>
 
-    // Final scroll to result
-    resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        <h3>Recommendation</h3>
+        <p>${recommendation}</p>
+
+        <h3>Location Context</h3>
+        <p><strong>Local Authority:</strong> ${location.localAuthority || "Unknown"}</p>
+        <p><strong>Nation:</strong> ${location.nation || "Unknown"}</p>
+
+        ${
+          flags.incompleteUserInfo
+            ? `<p style="opacity:0.7"><em>Note: Some inputs were incomplete, so the assessment includes added caution.</em></p>`
+            : ""
+        }
+
+        ${
+          flags.possibleProtectedArea
+            ? `<p style="opacity:0.7;color:#b06"><em>Warning: Automatic checks suggest this postcode may fall in a protected area (e.g., Conservation Area). Confirming the designation is recommended.</em></p>`
+            : ""
+        }
+
+        <p class="disclaimer">
+          This tool provides an automated early feasibility review.  
+          Local variations apply — confirm exact constraints with your local authority or a qualified planning consultant.
+        </p>
+      </div>
+    `;
 
   } catch (err) {
     spinner.classList.add("hidden");
-    resultContent.innerHTML = `<p style="color:red">Request failed: ${err.message}</p>`;
+    resultContent.innerHTML = `<p style='color:red'>Request failed: ${err.message}</p>`;
   }
 });
