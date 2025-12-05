@@ -93,7 +93,7 @@ form.addEventListener("submit", async (e) => {
   // Post to Worker
   let response;
   try {
-    response = await fetch("/api", {
+    response = await fetch("https://walker-planning-worker.emichops.workers.dev", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
