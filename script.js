@@ -57,7 +57,7 @@ payload.dimensions = {
     boundary: boundaryEl ? parseFloat(boundaryEl.value) || 0 : 0
 };
 
-    const res = await fetch("https://walker-planning-worker.emichops.workers.dev", {
+    const res = await fetch("https://walker-planning-worker-dev.emichops.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
