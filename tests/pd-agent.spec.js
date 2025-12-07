@@ -32,7 +32,10 @@ test.describe("Automated PD Scenario QA Suite", () => {
       // Generate report
       await page.click("#runCheck");
 
-      // Wait for the likelihood paragraph inside the results
+      // Wait for the result card to become visible (AI response returned)
+      await page.waitForSelector("#result-card:not([hidden])", { timeout: 60000 });
+
+      // Now wait for the likelihood paragraph inside the visible result
       await page.waitForSelector("#result-content p", { timeout: 60000 });
 
       // Extract the full likelihood paragraph text
