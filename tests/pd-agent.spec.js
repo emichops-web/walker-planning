@@ -17,8 +17,8 @@ await page.fill("#postcode", scenario.postcode);
 
 // REQUIRED SELECTS (must be valid or app will not run)
 await page.selectOption("#propertyType", { label: "Detached" });
-await page.selectOption("#areaStatus", "not_sure");
-await page.selectOption("#propertyStatus", "unknown");
+await page.selectOption("#areaStatus", "none");
+await page.selectOption("#propertyStatus", "none");
 
 // Now select project type AFTER required fields
 await page.selectOption("#projectType", scenario.projectType);
