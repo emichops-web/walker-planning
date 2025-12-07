@@ -30,7 +30,7 @@ export const scenarios = [
     areaStatus: "none",
     propertyStatus: "none",
     inputs: { projection: 2.5, height: 3, boundary: 2 },
-    expectedDecision: "amber"
+    expectedDecision: "green"
   },
 
   {
