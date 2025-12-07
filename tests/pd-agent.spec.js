@@ -32,15 +32,17 @@ test.describe("Automated PD Scenario QA Suite", () => {
       // Generate report
       await page.click("#runCheck");
 
-      // Wait for results
-      await page.waitForSelector("#pd-score", { timeout: 60000 });
+      // Wait for the likelihood paragraph inside the results
+      await page.waitForSelector("#result-content p", { timeout: 60000 });
 
-      // Extract score
-      const scoreText = await page.textContent("#pd-score");
-      const score = parseInt(scoreText.replace("%", "").trim());
+      // Extract the full likelihood paragraph text
+      const likelihoodRaw = await page.textContent("#result-content p");
 
-      // Extract decision
-      const decision = await page.textContent("#pd-decision");
+      // Extract the number (e.g., 35 from "Estimated likelihood: 35%")
+      const score = parseInt(likelihoodRaw.replace(/\D/g, ""));
+
+      // Extract the decision text ("Likely to qualify", "Unlikely", etc.)
+      const decision = await page.textContent(".verdict-pill");
 
       // Validate score range
       expect(score).toBeGreaterThanOrEqual(scenario.expectedScoreMin);
