@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { scenarios } from './pd-test-data.js';
 
-const DEMO_URL = "https://walker-planning-2.pages.dev/";   // your branch preview URL
+const DEMO_URL = "https://result-categories.walker-planning-2.pages.dev/";   // your branch preview URL
 
 test.describe("Automated PD Scenario QA Suite", () => {
 
