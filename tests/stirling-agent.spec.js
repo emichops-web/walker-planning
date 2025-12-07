@@ -43,11 +43,14 @@ test.describe("Stirling Council Scenario Suite", () => {
       // Run the checker
       await page.click("#runCheck");
 
-      // Reliable wait for UI to render result
-      await page.waitForLoadState("networkidle");
-      await page.waitForSelector("#result-card:not(.hidden)", { timeout: 45000 });
+      // More reliable wait — avoids Cloudflare networkidle hang
+      console.log("DEBUG: Waiting for result for scenario:", scenario.name);
 
-      // Now wait for decision banner
+      await page.waitForSelector("#result-banner, #result-card:not(.hidden)", {
+        timeout: 45000
+      });
+
+      // Now safely wait for the banner
       const banner = await page.waitForSelector("#result-banner", { timeout: 45000 });
       const bannerClass = await banner.getAttribute("class");
 
