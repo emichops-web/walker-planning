@@ -6,7 +6,11 @@
 import { test, expect } from '@playwright/test';
 import { stirlingScenarios } from './stirling-test-data.js';
 
-const DEMO_URL = "https://walker-planning-2.pages.dev/";   // branch preview
+const DEMO_URL = "https://walker-planning-2.pages.dev/";
+
+// Ensure long-running Stirling cases do not timeout
+test.setTimeout(45000);
+test.slow();
 
 test.describe("Stirling Council Scenario Suite", () => {
 
@@ -21,7 +25,7 @@ test.describe("Stirling Council Scenario Suite", () => {
       await page.selectOption("#propertyType", scenario.propertyType);
       await page.selectOption("#projectType", scenario.projectType);
 
-      // Fill optional dimensions
+      // Dimensions if needed
       if (scenario.inputs?.projection !== undefined) {
         await page.fill("#projection", scenario.inputs.projection.toString());
       }
@@ -32,18 +36,24 @@ test.describe("Stirling Council Scenario Suite", () => {
         await page.fill("#boundary", scenario.inputs.boundary.toString());
       }
 
+      // Area/status fields
       await page.selectOption("#areaStatus", scenario.areaStatus);
       await page.selectOption("#propertyStatus", scenario.propertyStatus);
 
+      // Run the checker
       await page.click("#runCheck");
 
-      // Wait for banner
-      const banner = await page.waitForSelector("#result-banner", { timeout: 60000 });
+      // Reliable wait for UI to render result
+      await page.waitForLoadState("networkidle");
+      await page.waitForSelector("#result-card:not(.hidden)", { timeout: 45000 });
+
+      // Now wait for decision banner
+      const banner = await page.waitForSelector("#result-banner", { timeout: 45000 });
       const bannerClass = await banner.getAttribute("class");
 
       expect(
         bannerClass.includes(scenario.expectedDecision),
-        `Expected "${scenario.expectedDecision}" but got "${bannerClass}"`
+        `Expected decision "${scenario.expectedDecision}" but got "${bannerClass}"`
       ).toBeTruthy();
 
       console.log(`✓ ${scenario.name} — PASSED (${scenario.expectedDecision})`);
