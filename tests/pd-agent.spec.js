@@ -17,7 +17,7 @@ test.describe("Automated PD Scenario QA Suite", () => {
       await page.selectOption("#propertyType", scenario.propertyType);
       await page.selectOption("#projectType", scenario.projectType);
 
-      // If dimensions exist, fill them
+      // If dimension fields appear, fill them
       if (scenario.inputs?.projection !== undefined) {
         await page.fill("#projection", scenario.inputs.projection.toString());
       }
@@ -35,19 +35,19 @@ test.describe("Automated PD Scenario QA Suite", () => {
       // Submit
       await page.click("#runCheck");
 
-      // --- RELIABLE WAIT FOR RESULTS ---
+      // Wait for the result card
       await page.waitForSelector("#result-card:not(.hidden)", { timeout: 60000 });
 
-      // Wait for the verdict pill
-      const pill = await page.waitForSelector(".verdict-pill", { timeout: 60000 });
+      // Wait for the NEW banner element
+      const banner = await page.waitForSelector("#result-banner", { timeout: 60000 });
 
-      // Extract the pill class (green/amber/red)
-      const pillClass = await pill.getAttribute("class");
+      // Extract banner classes
+      const bannerClass = await banner.getAttribute("class");
 
-      // Expect correct decision category
+      // Expect correct category: "green", "amber", or "red"
       expect(
-        pillClass.includes(scenario.expectedDecision),
-        `Expected decision category: ${scenario.expectedDecision}, but got: ${pillClass}`
+        bannerClass.includes(scenario.expectedDecision),
+        `Expected decision category '${scenario.expectedDecision}' but got classes: '${bannerClass}'`
       ).toBeTruthy();
 
       console.log(`✓ ${scenario.name} — PASSED (${scenario.expectedDecision})`);
