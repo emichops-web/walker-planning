@@ -13,10 +13,15 @@ test.describe("Automated PD Scenario QA Suite", () => {
       await page.goto(DEMO_URL);
 
       // Fill postcode
-      await page.fill("#postcode", scenario.postcode);
+await page.fill("#postcode", scenario.postcode);
 
-      // Select project type
-      await page.selectOption("#projectType", scenario.projectType);
+// REQUIRED SELECTS (must be valid or app will not run)
+await page.selectOption("#propertyType", { label: "Detached" });
+await page.selectOption("#areaStatus", "not_sure");
+await page.selectOption("#propertyStatus", "unknown");
+
+// Now select project type AFTER required fields
+await page.selectOption("#projectType", scenario.projectType);
 
       // Fill dimensions (if applicable)
       if (scenario.inputs.projection !== undefined) {
