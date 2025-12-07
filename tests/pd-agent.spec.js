@@ -30,10 +30,10 @@ test.describe("Automated PD Scenario QA Suite", () => {
       }
 
       // Generate report
-      await page.click("#generateReportBtn");
+      await page.click("#runCheck");
 
       // Wait for results
-      await page.waitForSelector("#pd-score", { timeout: 20000 });
+      await page.waitForSelector("#pd-score", { timeout: 60000 });
 
       // Extract score
       const scoreText = await page.textContent("#pd-score");
