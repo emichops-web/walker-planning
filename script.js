@@ -68,35 +68,30 @@ payload.dimensions = {
     const box = document.getElementById("result-card");
     const content = document.getElementById("result-content");
 
-    let verdictClass = 
-        data.score >= 65 ? "verdict-good" :
-        data.score >= 40 ? "verdict-warning" : "verdict-bad";
-
     content.innerHTML = `
-        <div class="verdict-pill ${verdictClass}">${data.verdict}</div>
-
-        <p><strong>Estimated likelihood:</strong> ${data.score}%</p>
+        <div id="result-banner" class="result-banner ${data.decision}">
+            ${data.decision_label}
+        </div>
 
         <h3>Summary</h3>
-        <p>${data.assessment}</p>
+        <p>${data.summary}</p>
 
         <h3>Positive Factors</h3>
-        <ul>${data.positives.map(x => `<li>${x}</li>`).join("")}</ul>
+        <ul>${data.positive.map(x => `<li>${x}</li>`).join("")}</ul>
 
         <h3>Key Risks</h3>
         <ul>${data.risks.map(x => `<li>${x}</li>`).join("")}</ul>
 
         <h3>Professional Assessment</h3>
-        <p>${data.professional}</p>
-
-        <h3>Recommendation</h3>
-        <p>${data.recommendation}</p>
+        <p>${data.assessment}</p>
 
         <h3>Location</h3>
         <p><strong>Town:</strong> ${data.town || "Unknown"}</p>
         <p><strong>Authority:</strong> ${data.authority}</p>
         <p><strong>Nation:</strong> ${data.nation}</p>
     `;
+
+
 
     box.classList.remove("hidden");
     box.scrollIntoView({behavior:"smooth"});

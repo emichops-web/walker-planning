@@ -92,3 +92,26 @@ button:hover {
     background: #f7d6d6;
     color: #a11919;
 }
+
+.result-banner {
+  padding: 12px;
+  margin-bottom: 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.result-banner.green {
+  background: #d9f4d9;
+  color: #155724;
+}
+
+.result-banner.amber {
+  background: #fff4cd;
+  color: #8a6d3b;
+}
+
+.result-banner.red {
+  background: #f8d7da;
+  color: #842029;
+}
