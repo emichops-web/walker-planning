@@ -20,6 +20,14 @@ test.describe("Stirling Council Scenario Suite", () => {
 
     test(`Scenario: ${scenario.name}`, async ({ page }) => {
 
+      // ------------------------------------------------
+      // FIX 1: Disable postcode lookup in the worker
+      // ------------------------------------------------
+      await page.setExtraHTTPHeaders({
+        "x-test-mode": "true"
+      });
+
+      // Load page after forcing test mode
       await page.goto(DEMO_URL, { waitUntil: "networkidle" });
 
       // Fill core fields
@@ -39,7 +47,7 @@ test.describe("Stirling Council Scenario Suite", () => {
       }
 
       // ----------------------------------------------------
-      // WAIT FOR HYDRATED OPTIONS BEFORE SELECTING STATUS
+      // FIX 2: Wait for hydrated options before selecting
       // ----------------------------------------------------
       await page.waitForSelector('#areaStatus option', { timeout: 5000 });
       await page.waitForSelector('#propertyStatus option', { timeout: 5000 });
