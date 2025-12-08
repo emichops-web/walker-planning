@@ -331,8 +331,8 @@ const stirlingCases = [
   // -----------------------------
 
   {
-    name: "Stirling — rear extension 3.2m — AMBER",
-    expected: "amber",
+    name: "Stirling — rear extension 3.2m — RED",
+    expected: "red",
     payload: {
       postcode: "FK7 0AA",
       propertyType: "Semi-detached",
@@ -448,8 +448,8 @@ const stirlingCases = [
   },
 
   {
-    name: "Callander — loft — national park — AMBER",
-    expected: "amber",
+    name: "Callander — loft — national park — RED",
+    expected: "red",
     payload: {
       postcode: "FK17 8BQ",
       propertyType: "Detached",
