@@ -84,7 +84,6 @@ document.getElementById("runCheck").addEventListener("click", async () => {
     method: "POST",
     headers: { 
         "Content-Type": "application/json",
-        "x-test-mode": "true"   // <-- add this line
     },
     body: JSON.stringify(payload)
 });
