@@ -114,7 +114,7 @@ const stirlingCases = [
       propertyStatus: "none",
       dimensions: { height: 2.8, boundary: 0.8 }
     },
-    expected: "amber"
+    expected: "red"
   },
 
   {
