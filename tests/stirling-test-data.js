@@ -8,7 +8,7 @@ export const stirlingScenarios = [
     projectType: "rear-extension",
     inputs: { projection: 3, height: 3, boundary: 2 },
     areaStatus: "conservation",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "red"
   },
 
@@ -20,7 +20,7 @@ export const stirlingScenarios = [
     projectType: "rear-extension",
     inputs: { projection: 3, height: 3, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "green"
   },
 
@@ -32,7 +32,7 @@ export const stirlingScenarios = [
     projectType: "rear-extension",
     inputs: { projection: 3, height: 3, boundary: 2 },
     areaStatus: "not_sure",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "amber"
   },
 
@@ -44,7 +44,7 @@ export const stirlingScenarios = [
     projectType: "side-extension",
     inputs: { projection: 2.5, height: 3, boundary: 2 },
     areaStatus: "national_park",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "red"
   },
 
@@ -56,7 +56,7 @@ export const stirlingScenarios = [
     projectType: "garage",
     inputs: {},
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "green"
   },
 
@@ -68,7 +68,7 @@ export const stirlingScenarios = [
     projectType: "dormer",
     inputs: { height: 2.2, boundary: 3 },
     areaStatus: "conservation",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "red"
   },
 
@@ -80,7 +80,7 @@ export const stirlingScenarios = [
     projectType: "garden-outbuilding",
     inputs: { height: 2.4, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "green"
   },
 
@@ -92,7 +92,7 @@ export const stirlingScenarios = [
     projectType: "rear-extension",
     inputs: { projection: 3, height: 3, boundary: 1.2 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "amber"
   },
 
@@ -104,7 +104,7 @@ export const stirlingScenarios = [
     projectType: "rear-extension",
     inputs: { projection: 4.5, height: 3, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "red"
   },
 
@@ -116,7 +116,7 @@ export const stirlingScenarios = [
     projectType: "loft",
     inputs: { height: 2.3, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "green"
   },
 
@@ -128,7 +128,7 @@ export const stirlingScenarios = [
     projectType: "rear-extension",
     inputs: { projection: 3, height: 3, boundary: 2.5 },
     areaStatus: "not_sure",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "amber"
   },
 
@@ -140,7 +140,7 @@ export const stirlingScenarios = [
     projectType: "side-extension",
     inputs: { projection: 3.5, height: 3, boundary: 2.2 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "red"
   },
 
@@ -152,7 +152,7 @@ export const stirlingScenarios = [
     projectType: "front-porch",
     inputs: { projection: 1.5, height: 2.5, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "green"
   },
 
@@ -164,7 +164,7 @@ export const stirlingScenarios = [
     projectType: "garden-outbuilding",
     inputs: { height: 2.5, boundary: 3 },
     areaStatus: "conservation",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "red"
   },
 
@@ -176,7 +176,7 @@ export const stirlingScenarios = [
     projectType: "rear-extension",
     inputs: { projection: 2, height: 3, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "green"
   },
 
@@ -188,7 +188,7 @@ export const stirlingScenarios = [
     projectType: "annexe",
     inputs: { projection: 4, height: 3.5, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "red"
   },
 
@@ -200,7 +200,7 @@ export const stirlingScenarios = [
     projectType: "dormer",
     inputs: { height: 2.2, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "green"
   },
 
@@ -224,7 +224,7 @@ export const stirlingScenarios = [
     projectType: "garden-outbuilding",
     inputs: { height: 2.5, boundary: 1.2 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "amber"
   },
 
@@ -236,7 +236,7 @@ export const stirlingScenarios = [
     projectType: "wrap-extension",
     inputs: { projection: 3, height: 3, boundary: 3 },
     areaStatus: "none",
-    propertyStatus: "unknown",
+    propertyStatus: "none",
     expectedDecision: "amber"
   }
 
