@@ -51,30 +51,6 @@ projectType.addEventListener("change", () => {
     dimensionFields.innerHTML = html;
 });
 
-
-// -------------------------------------------------------
-// PATCH A: ensure dropdowns are always hydrated
-// -------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-    const ensureOptions = () => {
-        const area = document.getElementById("areaStatus");
-        const prop = document.getElementById("propertyStatus");
-
-        const areaReady = area && area.options.length > 0;
-        const propReady = prop && prop.options.length > 0;
-
-        if (!areaReady || !propReady) {
-            console.warn("Dropdowns not ready yet — retrying...");
-            setTimeout(ensureOptions, 50);
-        } else {
-            console.log("Dropdowns fully hydrated.");
-        }
-    };
-
-    ensureOptions();
-});
-
-
 // -----------------------------
 // Submit request to Worker
 // -----------------------------
