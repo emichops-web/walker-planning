@@ -1,13 +1,13 @@
 // tests/pd-stirling-api.spec.js
 //
-// Stirling Council – Regulation-Accurate 10-Case PD Suite
+// Stirling Council – Regulation-Accurate 20-Case PD Suite
 // Validates decisions via the API Worker (fast + stable)
 // ---------------------------------------------------------
 
 import { test, expect } from "@playwright/test";
 
 // ----------------------------
-// 10 Real-World Stirling Scenarios
+// 20 Real-World Stirling Scenarios
 // ----------------------------
 const stirlingCases = [
 
@@ -139,15 +139,146 @@ const stirlingCases = [
       dimensions: { projection: 4, height: 3.5, boundary: 3 }
     },
     expected: "red"
+  },
+
+  // ---- NEW CASES ----
+
+  {
+    name: "Stirling City Centre — flat rear extension — RED",
+    payload: {
+      postcode: "FK8 1AX",
+      propertyType: "Flat",
+      projectType: "rear-extension",
+      areaStatus: "none",
+      propertyStatus: "none",
+      dimensions: { projection: 2, height: 3, boundary: 3 }
+    },
+    expected: "red"
+  },
+
+  {
+    name: "Bridge of Allan — wrap extension 3.5m — AMBER",
+    payload: {
+      postcode: "FK9 4NA",
+      propertyType: "Detached",
+      projectType: "wrap-extension",
+      areaStatus: "none",
+      propertyStatus: "none",
+      dimensions: { projection: 3.5, height: 3, boundary: 2.5 }
+    },
+    expected: "amber"
+  },
+
+  {
+    name: "Callander — rear extension — national park — RED",
+    payload: {
+      postcode: "FK17 8BQ",
+      propertyType: "Semi-detached",
+      projectType: "rear-extension",
+      areaStatus: "national_park",
+      propertyStatus: "none",
+      dimensions: { projection: 2.8, height: 3, boundary: 2.5 }
+    },
+    expected: "red"
+  },
+
+  {
+    name: "Dunblane — side extension 3.2m — AMBER",
+    payload: {
+      postcode: "FK15 0HQ",
+      propertyType: "Semi-detached",
+      projectType: "side-extension",
+      areaStatus: "none",
+      propertyStatus: "none",
+      dimensions: { projection: 3.2, height: 3, boundary: 2 }
+    },
+    expected: "amber"
+  },
+
+  {
+    name: "Stirling — porch 4m² — GREEN",
+    payload: {
+      postcode: "FK7 7LJ",
+      propertyType: "Detached",
+      projectType: "front-porch",
+      areaStatus: "none",
+      propertyStatus: "none",
+      dimensions: { projection: 1.5, height: 2.5, boundary: 3 }
+    },
+    expected: "green"
+  },
+
+  {
+    name: "Kings Park — porch in conservation — RED",
+    payload: {
+      postcode: "FK8 2JS",
+      propertyType: "Semi-detached",
+      projectType: "front-porch",
+      areaStatus: "conservation",
+      propertyStatus: "none",
+      dimensions: { projection: 1.5, height: 2.5, boundary: 3 }
+    },
+    expected: "red"
+  },
+
+  {
+    name: "Raploch — garden building 4m high — within 2m boundary — RED",
+    payload: {
+      postcode: "FK8 1TZ",
+      propertyType: "Terraced",
+      projectType: "garden-outbuilding",
+      areaStatus: "none",
+      propertyStatus: "none",
+      dimensions: { height: 4, boundary: 1.5 }
+    },
+    expected: "red"
+  },
+
+  {
+    name: "St Ninians — loft conversion — not sure designation — AMBER",
+    payload: {
+      postcode: "FK7 0HH",
+      propertyType: "Semi-detached",
+      projectType: "loft",
+      areaStatus: "not_sure",
+      propertyStatus: "none",
+      dimensions: { height: 2.4, boundary: 3 }
+    },
+    expected: "amber"
+  },
+
+  {
+    name: "Cambusbarron — annexe — conservation — RED",
+    payload: {
+      postcode: "FK8 2HP",
+      propertyType: "Detached",
+      projectType: "annexe",
+      areaStatus: "conservation",
+      propertyStatus: "none",
+      dimensions: { projection: 4, height: 3.5, boundary: 3 }
+    },
+    expected: "red"
+  },
+
+  {
+    name: "Bannockburn — two-storey extension — semi-detached — RED",
+    payload: {
+      postcode: "FK7 8LA",
+      propertyType: "Semi-detached",
+      projectType: "two-storey",
+      areaStatus: "none",
+      propertyStatus: "none",
+      dimensions: { projection: 3, height: 5, boundary: 3 }
+    },
+    expected: "red"
   }
 
 ];
 
-
 // -----------------------------------
 // TEST RUNNER
 // -----------------------------------
-test.describe("Stirling API – Regulation-Accurate Suite (10 cases)", () => {
+test.describe("Stirling API – Regulation-Accurate Suite (20 cases)", () => {
 
   for (const scenario of stirlingCases) {
 
