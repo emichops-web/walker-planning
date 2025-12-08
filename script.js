@@ -8,35 +8,50 @@ projectType.addEventListener("change", () => {
     const type = projectType.value;
     let html = "";
 
-// ALL projects requiring projection + height + boundary
-const needsAll = [
-    "rear-extension",
-    "side-extension",
-    "wrap-extension",
-    "two-storey",
-    "front-porch",
-    "annexe",
-    "dormer",
-    "loft",
-    "garden-outbuilding",
-    "garage"
-];
+    // Projects requiring ALL THREE dimensions
+    const needsAll = [
+        "rear-extension",
+        "side-extension",
+        "wrap-extension",
+        "two-storey",
+        "front-porch",
+        "annexe"
+    ];
 
-if (needsAll.includes(type)) {
-    html = `
-        <label>Projection (m)</label>
-        <input id="projection" type="number" step="0.1" />
+    // Projects requiring HEIGHT + BOUNDARY only
+    const needsHeightBoundary = [
+        "dormer",
+        "loft",
+        "garden-outbuilding"
+    ];
 
-        <label>Height (m)</label>
-        <input id="height" type="number" step="0.1" />
+    if (needsAll.includes(type)) {
 
-        <label>Nearest boundary distance (m)</label>
-        <input id="boundary" type="number" step="0.1" />
-    `;
-} else {
-    // Some projects (e.g., certificate checks) don't need dimensions
-    html = "";
-}
+        html = `
+            <label>Projection (m)</label>
+            <input id="projection" type="number" step="0.1" />
+
+            <label>Height (m)</label>
+            <input id="height" type="number" step="0.1" />
+
+            <label>Nearest boundary distance (m)</label>
+            <input id="boundary" type="number" step="0.1" />
+        `;
+
+    } else if (needsHeightBoundary.includes(type)) {
+
+        html = `
+            <label>Height (m)</label>
+            <input id="height" type="number" step="0.1" />
+
+            <label>Nearest boundary distance (m)</label>
+            <input id="boundary" type="number" step="0.1" />
+        `;
+
+    } else {
+        // Garage conversions and non-dimensional projects
+        html = "";
+    }
 
     dimensionFields.innerHTML = html;
 });
