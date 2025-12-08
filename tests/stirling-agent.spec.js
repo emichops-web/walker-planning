@@ -6,8 +6,7 @@
 import { test, expect } from '@playwright/test';
 import { stirlingScenarios } from './stirling-test-data.js';
 
-// Compact startup log only
-console.log(`Loaded Stirling scenarios (count): ${stirlingScenarios.length}`);
+console.log("Loaded Stirling scenarios:", stirlingScenarios);
 
 const DEMO_URL = "https://result-categories.walker-planning-2.pages.dev/";
 
@@ -16,18 +15,6 @@ test.setTimeout(45000);
 test.slow();
 
 test.describe("Stirling Council Scenario Suite", () => {
-
-  // ----------------------------------------------------
-  // Silence browser console except for real errors
-  // ----------------------------------------------------
-  test.beforeEach(async ({ page }) => {
-    page.on("console", msg => {
-      if (msg.type() === "error") {
-        console.error("Browser error:", msg.text());
-      }
-      // All other logs ignored (test mode hydration etc.)
-    });
-  });
 
   for (const scenario of stirlingScenarios) {
 
@@ -40,17 +27,19 @@ test.describe("Stirling Council Scenario Suite", () => {
         "x-test-mode": "true"
       });
 
-      // Load page after forcing TEST MODE
+      // Load page after forcing test mode
       await page.goto(DEMO_URL, { waitUntil: "networkidle" });
 
       // ------------------------------------------------
       // Fill core fields
-      ------------------------------------------------
+      // ------------------------------------------------
       await page.fill("#postcode", scenario.postcode);
       await page.selectOption("#propertyType", scenario.propertyType);
       await page.selectOption("#projectType", scenario.projectType);
 
+      // ------------------------------------------------
       // Dimensions if needed
+      // ------------------------------------------------
       if (scenario.inputs?.projection !== undefined) {
         await page.fill("#projection", scenario.inputs.projection.toString());
       }
@@ -61,33 +50,32 @@ test.describe("Stirling Council Scenario Suite", () => {
         await page.fill("#boundary", scenario.inputs.boundary.toString());
       }
 
-      // ----------------------------------------------------
-      // Area / Property Status (Patch A removes async lookup delays)
-      // ----------------------------------------------------
+      // ------------------------------------------------
+      // Area/status fields
+      // ------------------------------------------------
       await page.selectOption("#areaStatus", scenario.areaStatus);
       await page.selectOption("#propertyStatus", scenario.propertyStatus);
 
-      // ----------------------------------------------------
-      // Run the checker
-      // ----------------------------------------------------
+      // ------------------------------------------------
+      // Run check
+      // ------------------------------------------------
       await page.click("#runCheck");
 
-      // We don't output full debug lines anymore
-      // console.log(`Checking ${scenario.name}`);
+      console.log("DEBUG: Waiting for result for scenario:", scenario.name);
 
-      // Wait for result card OR banner
       await page.waitForSelector("#result-banner, #result-card:not(.hidden)", {
         timeout: 45000
       });
 
-      // Always extract banner after visible
       const banner = await page.waitForSelector("#result-banner", { timeout: 45000 });
       const bannerClass = await banner.getAttribute("class");
 
       expect(
         bannerClass.includes(scenario.expectedDecision),
-        `Expected "${scenario.expectedDecision}" but got "${bannerClass}"`
+        `Expected decision "${scenario.expectedDecision}" but got "${bannerClass}"`
       ).toBeTruthy();
+
+      console.log(`✓ ${scenario.name} — PASSED (${scenario.expectedDecision})`);
     });
   }
 });
