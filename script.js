@@ -15,14 +15,14 @@ projectType.addEventListener("change", () => {
         "wrap-extension",
         "two-storey",
         "front-porch",
-        "annexe"
+        "annexe",
+        "garden-outbuilding",
+        "dormer"
     ];
 
     // Projects requiring HEIGHT + BOUNDARY only
     const needsHeightBoundary = [
-        "dormer",
-        "loft",
-        "garden-outbuilding"
+        "loft"
     ];
 
     if (needsAll.includes(type)) {
