@@ -2,10 +2,11 @@
 //
 // Automated regression suite for Stirling-specific PD scenarios
 //
-console.log("Loaded Stirling scenarios:", stirlingScenarios);
 
 import { test, expect } from '@playwright/test';
 import { stirlingScenarios } from './stirling-test-data.js';
+
+console.log("Loaded Stirling scenarios:", stirlingScenarios);
 
 const DEMO_URL = "https://result-categories.walker-planning-2.pages.dev/";
 
