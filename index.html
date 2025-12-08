@@ -1,10 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Instant Permitted Development Check</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <title>Instant Permitted Development Check</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- PATCH A: Enable TEST MODE when Playwright sends header -->
+  <script>
+    window.TEST_MODE = false;
+
+    // Request HEAD to detect the header set by Playwright
+    fetch(".", { method: "HEAD" })
+      .then(res => {
+        if (res.headers.get("x-test-mode") === "true") {
+          window.TEST_MODE = true;
+          console.log("TEST MODE ENABLED — postcode lookup disabled.");
+        }
+      })
+      .catch(err => console.warn("Test mode detection failed:", err));
+  </script>
 </head>
 
 <body>
