@@ -6,7 +6,7 @@
 import { test, expect } from '@playwright/test';
 import { stirlingScenarios } from './stirling-test-data.js';
 
-const DEMO_URL = "https://walker-planning-2.pages.dev/";
+const DEMO_URL = "https://result-categories.walker-planning-2.pages.dev/";
 
 // Ensure long-running Stirling cases do not timeout
 test.setTimeout(45000);
