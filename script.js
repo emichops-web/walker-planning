@@ -8,26 +8,50 @@ projectType.addEventListener("change", () => {
     const type = projectType.value;
     let html = "";
 
-    const needsDims = [
+    // Projects requiring ALL THREE dimensions
+    const needsAll = [
         "rear-extension",
         "side-extension",
         "wrap-extension",
         "two-storey",
-        "front-porch"
+        "front-porch",
+        "annexe"
     ];
 
-    if (needsDims.includes(type)) {
-    html = `
-        <label>Projection (m)</label>
-        <input id="projection" type="number" step="0.1" />
+    // Projects requiring HEIGHT + BOUNDARY only
+    const needsHeightBoundary = [
+        "dormer",
+        "loft",
+        "garden-outbuilding"
+    ];
 
-        <label>Height (m)</label>
-        <input id="height" type="number" step="0.1" />
+    if (needsAll.includes(type)) {
 
-        <label>Nearest boundary distance (m)</label>
-        <input id="boundary" type="number" step="0.1" />
-    `;
-}
+        html = `
+            <label>Projection (m)</label>
+            <input id="projection" type="number" step="0.1" />
+
+            <label>Height (m)</label>
+            <input id="height" type="number" step="0.1" />
+
+            <label>Nearest boundary distance (m)</label>
+            <input id="boundary" type="number" step="0.1" />
+        `;
+
+    } else if (needsHeightBoundary.includes(type)) {
+
+        html = `
+            <label>Height (m)</label>
+            <input id="height" type="number" step="0.1" />
+
+            <label>Nearest boundary distance (m)</label>
+            <input id="boundary" type="number" step="0.1" />
+        `;
+
+    } else {
+        // Garage conversions and truly dimensionless projects
+        html = "";
+    }
 
     dimensionFields.innerHTML = html;
 });
@@ -36,6 +60,7 @@ projectType.addEventListener("change", () => {
 // Submit request to Worker
 // -----------------------------
 document.getElementById("runCheck").addEventListener("click", async () => {
+
     const payload = {
         postcode: document.getElementById("postcode").value.trim(),
         propertyType: document.getElementById("propertyType").value,
@@ -46,16 +71,16 @@ document.getElementById("runCheck").addEventListener("click", async () => {
         dimensions: {}
     };
 
-   // Collect dimensions if inputs exist
-const projEl = document.getElementById("projection");
-const heightEl = document.getElementById("height");
-const boundaryEl = document.getElementById("boundary");
+    // Safe dimension reading
+    const projEl = document.getElementById("projection");
+    const heightEl = document.getElementById("height");
+    const boundaryEl = document.getElementById("boundary");
 
-payload.dimensions = {
-    projection: projEl ? parseFloat(projEl.value) || 0 : 0,
-    height: heightEl ? parseFloat(heightEl.value) || 0 : 0,
-    boundary: boundaryEl ? parseFloat(boundaryEl.value) || 0 : 0
-};
+    payload.dimensions = {
+        projection: projEl ? parseFloat(projEl.value) || 0 : 0,
+        height: heightEl ? parseFloat(heightEl.value) || 0 : 0,
+        boundary: boundaryEl ? parseFloat(boundaryEl.value) || 0 : 0
+    };
 
     const res = await fetch("https://walker-planning-worker-dev.emichops.workers.dev", {
         method: "POST",
@@ -91,8 +116,7 @@ payload.dimensions = {
         <p><strong>Nation:</strong> ${data.nation}</p>
     `;
 
-
-
     box.classList.remove("hidden");
-    box.scrollIntoView({behavior:"smooth"});
+    box.scrollIntoView({ behavior: "smooth" });
+
 });
