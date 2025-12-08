@@ -141,7 +141,7 @@ const stirlingCases = [
       dimensions: { projection: 4, height: 3.5, boundary: 3 }
     },
     expected: "red"
-  },
+  }
 
   {
     name: "Stirling City Centre — flat rear extension — RED",
