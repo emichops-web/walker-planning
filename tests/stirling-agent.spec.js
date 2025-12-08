@@ -38,6 +38,12 @@ test.describe("Stirling Council Scenario Suite", () => {
         await page.fill("#boundary", scenario.inputs.boundary.toString());
       }
 
+      // ----------------------------------------------------
+      // WAIT FOR HYDRATED OPTIONS BEFORE SELECTING STATUS
+      // ----------------------------------------------------
+      await page.waitForSelector('#areaStatus option', { timeout: 5000 });
+      await page.waitForSelector('#propertyStatus option', { timeout: 5000 });
+
       // Area/status fields
       await page.selectOption("#areaStatus", scenario.areaStatus);
       await page.selectOption("#propertyStatus", scenario.propertyStatus);
@@ -45,14 +51,12 @@ test.describe("Stirling Council Scenario Suite", () => {
       // Run the checker
       await page.click("#runCheck");
 
-      // More reliable wait — avoids Cloudflare networkidle hang
       console.log("DEBUG: Waiting for result for scenario:", scenario.name);
 
       await page.waitForSelector("#result-banner, #result-card:not(.hidden)", {
         timeout: 45000
       });
 
-      // Now safely wait for the banner
       const banner = await page.waitForSelector("#result-banner", { timeout: 45000 });
       const bannerClass = await banner.getAttribute("class");
 
