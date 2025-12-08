@@ -1,10 +1,12 @@
 // tests/pd-stirling-api.spec.js
 //
-// Stirling Council – Regulation-Accurate 20-Case PD Suite
+// Stirling API – Regulation-Accurate Suite (20 cases)
 // Validates decisions via the API Worker (fast + stable)
 // ---------------------------------------------------------
 
 import { test, expect } from "@playwright/test";
+
+const API_URL = "https://walker-planning-worker-dev.emichops.workers.dev";
 
 // ----------------------------
 // 20 Real-World Stirling Scenarios
@@ -141,8 +143,6 @@ const stirlingCases = [
     expected: "red"
   },
 
-  // ---- NEW CASES ----
-
   {
     name: "Stirling City Centre — flat rear extension — RED",
     payload: {
@@ -183,7 +183,7 @@ const stirlingCases = [
   },
 
   {
-    name: "Dunblane — side extension 3.2m — AMBER",
+    name: "Dunblane — side extension — 3.2m — AMBER",
     payload: {
       postcode: "FK15 0HQ",
       propertyType: "Semi-detached",
@@ -284,13 +284,13 @@ test.describe("Stirling API – Regulation-Accurate Suite (20 cases)", () => {
 
     test(`Scenario: ${scenario.name}`, async ({ request }) => {
 
-      const res = await request.post(
-        "https://walker-planning-worker-dev.emichops.workers.dev",
-        {
-          headers: { "Content-Type": "application/json", "x-test-mode": "true" },
-          data: scenario.payload
-        }
-      );
+      const res = await request.post(API_URL, {
+        headers: {
+          "Content-Type": "application/json",
+          "x-test-mode": "true"
+        },
+        data: scenario.payload
+      });
 
       expect(res.ok()).toBeTruthy();
 
