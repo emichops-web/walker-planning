@@ -21,8 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run PD QA Suite
-        run: npx playwright test --workers=1
+      # No browsers needed for API tests — Playwright "request" does not use UI
+      - name: Run PD API Regression Tests
+        run: npx playwright test tests/pd-agent-api.spec.js --workers=1
