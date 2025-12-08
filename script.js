@@ -81,12 +81,13 @@ document.getElementById("runCheck").addEventListener("click", async () => {
     };
 
     const res = await fetch("https://walker-planning-worker-dev.emichops.workers.dev", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-    });
+    method: "POST",
+    headers: { 
+        "Content-Type": "application/json",
+        "x-test-mode": "true"   // <-- add this line
+    },
+    body: JSON.stringify(payload)
+});
 
     const data = await res.json();
 
