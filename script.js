@@ -9,21 +9,21 @@ projectType.addEventListener("change", () => {
     let html = "";
 
     // Projects requiring projection + height + boundary
-    const needsAll = [
-        "rear-extension",
-        "side-extension",
-        "wrap-extension",
-        "two-storey",
-        "front-porch",
-        "annexe",
-        "garden-outbuilding",
-        "dormer"
-    ];
+const needsAll = [
+    "rear-extension",
+    "side-extension",
+    "wrap-extension",
+    "two-storey",
+    "front-porch",
+    "annexe"
+];
 
-    // Projects requiring height + boundary only
-    const needsHB = [
-        "loft"
-    ];
+// Projects requiring height + boundary only
+const needsHB = [
+    "dormer",
+    "loft",
+    "garden-outbuilding"
+];
 
     if (needsAll.includes(type)) {
         html = `
