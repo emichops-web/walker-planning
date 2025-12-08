@@ -8,22 +8,20 @@ projectType.addEventListener("change", () => {
     const type = projectType.value;
     let html = "";
 
-    // Projects requiring projection + height + boundary
-const needsAll = [
-    "rear-extension",
-    "side-extension",
-    "wrap-extension",
-    "two-storey",
-    "front-porch",
-    "annexe"
-];
+    const needsAll = [
+        "rear-extension",
+        "side-extension",
+        "wrap-extension",
+        "two-storey",
+        "front-porch",
+        "annexe"
+    ];
 
-// Projects requiring height + boundary only
-const needsHB = [
-    "dormer",
-    "loft",
-    "garden-outbuilding"
-];
+    const needsHB = [
+        "dormer",
+        "loft",
+        "garden-outbuilding"
+    ];
 
     if (needsAll.includes(type)) {
         html = `
@@ -37,7 +35,6 @@ const needsHB = [
             <input id="boundary" type="number" step="0.1" />
         `;
     }
-
     else if (needsHB.includes(type)) {
         html = `
             <label>Height (m)</label>
@@ -47,13 +44,36 @@ const needsHB = [
             <input id="boundary" type="number" step="0.1" />
         `;
     }
-
     else {
-        html = ""; // garage etc.
+        html = ""; 
     }
 
     dimensionFields.innerHTML = html;
 });
+
+
+// -------------------------------------------------------
+// PATCH A: ensure dropdowns are always hydrated
+// -------------------------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+    const ensureOptions = () => {
+        const area = document.getElementById("areaStatus");
+        const prop = document.getElementById("propertyStatus");
+
+        const areaReady = area && area.options.length > 0;
+        const propReady = prop && prop.options.length > 0;
+
+        if (!areaReady || !propReady) {
+            console.warn("Dropdowns not ready yet — retrying...");
+            setTimeout(ensureOptions, 50);
+        } else {
+            console.log("Dropdowns fully hydrated.");
+        }
+    };
+
+    ensureOptions();
+});
+
 
 // -----------------------------
 // Submit request to Worker
@@ -81,12 +101,10 @@ document.getElementById("runCheck").addEventListener("click", async () => {
     };
 
     const res = await fetch("https://walker-planning-worker-dev.emichops.workers.dev", {
-    method: "POST",
-    headers: { 
-        "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload)
-});
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
 
     const data = await res.json();
 
@@ -118,5 +136,4 @@ document.getElementById("runCheck").addEventListener("click", async () => {
 
     box.classList.remove("hidden");
     box.scrollIntoView({ behavior: "smooth" });
-
 });
