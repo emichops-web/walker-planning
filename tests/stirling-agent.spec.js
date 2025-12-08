@@ -46,12 +46,6 @@ test.describe("Stirling Council Scenario Suite", () => {
         await page.fill("#boundary", scenario.inputs.boundary.toString());
       }
 
-      // ----------------------------------------------------
-      // FIX 2: Wait for hydrated options before selecting
-      // ----------------------------------------------------
-      await page.waitForSelector('#areaStatus option', { timeout: 5000 });
-      await page.waitForSelector('#propertyStatus option', { timeout: 5000 });
-
       // Area/status fields
       await page.selectOption("#areaStatus", scenario.areaStatus);
       await page.selectOption("#propertyStatus", scenario.propertyStatus);
