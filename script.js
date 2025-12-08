@@ -8,7 +8,7 @@ projectType.addEventListener("change", () => {
     const type = projectType.value;
     let html = "";
 
-    // Projects requiring ALL THREE dimensions
+    // Projects requiring projection + height + boundary
     const needsAll = [
         "rear-extension",
         "side-extension",
@@ -20,13 +20,12 @@ projectType.addEventListener("change", () => {
         "dormer"
     ];
 
-    // Projects requiring HEIGHT + BOUNDARY only
-    const needsHeightBoundary = [
+    // Projects requiring height + boundary only
+    const needsHB = [
         "loft"
     ];
 
     if (needsAll.includes(type)) {
-
         html = `
             <label>Projection (m)</label>
             <input id="projection" type="number" step="0.1" />
@@ -37,9 +36,9 @@ projectType.addEventListener("change", () => {
             <label>Nearest boundary distance (m)</label>
             <input id="boundary" type="number" step="0.1" />
         `;
+    }
 
-    } else if (needsHeightBoundary.includes(type)) {
-
+    else if (needsHB.includes(type)) {
         html = `
             <label>Height (m)</label>
             <input id="height" type="number" step="0.1" />
@@ -47,10 +46,10 @@ projectType.addEventListener("change", () => {
             <label>Nearest boundary distance (m)</label>
             <input id="boundary" type="number" step="0.1" />
         `;
+    }
 
-    } else {
-        // Garage conversions and non-dimensional projects
-        html = "";
+    else {
+        html = ""; // garage etc.
     }
 
     dimensionFields.innerHTML = html;
@@ -71,7 +70,6 @@ document.getElementById("runCheck").addEventListener("click", async () => {
         dimensions: {}
     };
 
-    // Safe dimension reading
     const projEl = document.getElementById("projection");
     const heightEl = document.getElementById("height");
     const boundaryEl = document.getElementById("boundary");
@@ -84,7 +82,9 @@ document.getElementById("runCheck").addEventListener("click", async () => {
 
     const res = await fetch("https://walker-planning-worker-dev.emichops.workers.dev", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify(payload)
     });
 
