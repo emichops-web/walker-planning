@@ -6,7 +6,8 @@
 import { test, expect } from '@playwright/test';
 import { stirlingScenarios } from './stirling-test-data.js';
 
-console.log("Loaded Stirling scenarios:", stirlingScenarios);
+// Compact startup log only
+console.log(`Loaded Stirling scenarios (count): ${stirlingScenarios.length}`);
 
 const DEMO_URL = "https://result-categories.walker-planning-2.pages.dev/";
 
@@ -15,6 +16,18 @@ test.setTimeout(45000);
 test.slow();
 
 test.describe("Stirling Council Scenario Suite", () => {
+
+  // ----------------------------------------------------
+  // Silence browser console except for real errors
+  // ----------------------------------------------------
+  test.beforeEach(async ({ page }) => {
+    page.on("console", msg => {
+      if (msg.type() === "error") {
+        console.error("Browser error:", msg.text());
+      }
+      // All other logs ignored (test mode hydration etc.)
+    });
+  });
 
   for (const scenario of stirlingScenarios) {
 
@@ -27,10 +40,12 @@ test.describe("Stirling Council Scenario Suite", () => {
         "x-test-mode": "true"
       });
 
-      // Load page after forcing test mode
+      // Load page after forcing TEST MODE
       await page.goto(DEMO_URL, { waitUntil: "networkidle" });
 
+      // ------------------------------------------------
       // Fill core fields
+      ------------------------------------------------
       await page.fill("#postcode", scenario.postcode);
       await page.selectOption("#propertyType", scenario.propertyType);
       await page.selectOption("#projectType", scenario.projectType);
@@ -46,28 +61,33 @@ test.describe("Stirling Council Scenario Suite", () => {
         await page.fill("#boundary", scenario.inputs.boundary.toString());
       }
 
-      // Area/status fields
+      // ----------------------------------------------------
+      // Area / Property Status (Patch A removes async lookup delays)
+      // ----------------------------------------------------
       await page.selectOption("#areaStatus", scenario.areaStatus);
       await page.selectOption("#propertyStatus", scenario.propertyStatus);
 
+      // ----------------------------------------------------
       // Run the checker
+      // ----------------------------------------------------
       await page.click("#runCheck");
 
-      console.log("DEBUG: Waiting for result for scenario:", scenario.name);
+      // We don't output full debug lines anymore
+      // console.log(`Checking ${scenario.name}`);
 
+      // Wait for result card OR banner
       await page.waitForSelector("#result-banner, #result-card:not(.hidden)", {
         timeout: 45000
       });
 
+      // Always extract banner after visible
       const banner = await page.waitForSelector("#result-banner", { timeout: 45000 });
       const bannerClass = await banner.getAttribute("class");
 
       expect(
         bannerClass.includes(scenario.expectedDecision),
-        `Expected decision "${scenario.expectedDecision}" but got "${bannerClass}"`
+        `Expected "${scenario.expectedDecision}" but got "${bannerClass}"`
       ).toBeTruthy();
-
-      console.log(`✓ ${scenario.name} — PASSED (${scenario.expectedDecision})`);
     });
   }
 });
