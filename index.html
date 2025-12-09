@@ -2,173 +2,142 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Planning Permission Checker – Stirling</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planning Permission Checker</title>
+  <link rel="stylesheet" href="styles.css" />
 
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f3f2f1;
+      font-family: system-ui, sans-serif;
       margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 30px;
-      background: #ffffff;
-      margin-top: 20px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+      padding: 20px;
+      background: #f7f7f7;
     }
 
     h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
+      margin-top: 0;
     }
 
-    .gov-label {
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: 0 auto 20px;
+    }
+
+    label {
       display: block;
-      font-weight: bold;
-      margin-top: 20px;
-      margin-bottom: 5px;
+      margin-top: 12px;
+      font-weight: 600;
     }
 
     input, select {
       width: 100%;
       padding: 10px;
-      border: 1px solid #b1b4b6;
-      font-size: 16px;
-      border-radius: 4px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
 
-    .button {
-      background: #00703c;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 4px;
-      border: none;
-      font-size: 18px;
-      margin-top: 25px;
-      cursor: pointer;
+    .result-section {
+      display: none;
+      margin-top: 30px;
     }
-    .button:hover { background: #005a30; }
 
     .pill {
       display: inline-block;
-      padding: 8px 16px;
-      border-radius: 4px;
-      color: #fff;
-      font-weight: bold;
-      margin-bottom: 15px;
-      font-size: 16px;
-    }
-    .pill-green { background: #00703c; }
-    .pill-amber { background: #ffbf47; color: #000; }
-    .pill-red { background: #d4351c; }
-
-    .hidden { display: none; }
-
-    .error {
-      color: #d4351c;
-      font-weight: bold;
-      margin-top: 8px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: white;
     }
 
-    hr { margin: 30px 0; border: none; border-top: 1px solid #b1b4b6; }
+    .pill.green { background: #2e7d32; }
+    .pill.amber { background: #f9a825; }
+    .pill.red   { background: #c62828; }
+
+    ul {
+      padding-left: 20px;
+    }
   </style>
+
 </head>
 
 <body>
-  <div class="container">
 
-    <h1>Do I need planning permission?</h1>
-    <p>This tool provides quick guidance based on Stirling Council rules and national legislation.</p>
+<div class="card">
+  <h1>Do I Need Planning Permission?</h1>
+  <p>Answer a few quick questions to assess whether your proposal is likely permitted development.</p>
 
-    <!-- Errors -->
-    <div id="errorBox" class="error hidden"></div>
+  <label for="postcode">Postcode</label>
+  <input type="text" id="postcode" placeholder="e.g. FK8 2ET" />
 
-    <!-- POSTCODE -->
-    <label class="gov-label" for="postcode">Postcode</label>
-    <input id="postcode" type="text" placeholder="e.g. FK8 2AQ">
+  <label for="propertyType">Property Type</label>
+  <select id="propertyType">
+    <option value="">Select...</option>
+    <option>Detached</option>
+    <option>Semi-detached</option>
+    <option>Terraced</option>
+    <option>Flat</option>
+  </select>
 
-    <!-- PROPERTY TYPE -->
-    <label class="gov-label" for="propertyType">Property type</label>
-    <select id="propertyType">
-      <option value="">Select...</option>
-      <option>Detached</option>
-      <option>Semi-detached</option>
-      <option>Terraced</option>
-      <option>Flat</option>
-    </select>
+  <label for="projectType">Project Type</label>
+  <select id="projectType">
+    <option value="">Select...</option>
+    <option value="rear-extension">Rear extension</option>
+    <option value="side-extension">Side extension</option>
+    <option value="wrap-extension">Wrap-around extension</option>
+    <option value="two-storey">Two-storey extension</option>
+    <option value="front-porch">Front porch</option>
+    <option value="dormer">Dormer</option>
+    <option value="loft">Internal loft conversion</option>
+    <option value="garden-outbuilding">Garden outbuilding</option>
+    <option value="garage">Garage conversion</option>
+    <option value="annexe">Annexe</option>
+  </select>
 
-    <!-- PROJECT TYPE -->
-    <label class="gov-label" for="projectType">Project type</label>
-    <select id="projectType">
-      <option value="">Select...</option>
-      <option value="rear-extension">Rear extension</option>
-      <option value="side-extension">Side extension</option>
-      <option value="wrap-extension">Wrap-around extension</option>
-      <option value="two-storey">Two-storey extension</option>
-      <option value="front-porch">Porch</option>
-      <option value="dormer">Dormer</option>
-      <option value="loft">Loft conversion</option>
-      <option value="garage">Garage conversion</option>
-      <option value="garden-outbuilding">Garden building / shed</option>
-      <option value="annexe">Annexe</option>
-    </select>
+  <!-- Dynamic dimensions -->
+  <div id="dimension-fields"></div>
 
-    <!-- DIMENSIONS (dynamic) -->
-    <div id="dimensionFields" class="hidden">
-      <label class="gov-label">Projection (m)</label>
-      <input id="projection" type="number" step="0.1">
+  <label for="areaStatus">Is your property in a special area?</label>
+  <select id="areaStatus">
+    <option value="not_sure">Not sure</option>
+    <option value="none">No</option>
+    <option value="conservation">Conservation area</option>
+    <option value="national_park">National Park</option>
+    <option value="aonb">AONB</option>
+  </select>
 
-      <label class="gov-label">Height (m)</label>
-      <input id="height" type="number" step="0.1">
+  <label for="listed">Is the property a listed building?</label>
+  <select id="listed">
+    <option value="no">No</option>
+    <option value="yes">Yes</option>
+  </select>
 
-      <label class="gov-label">Distance to boundary (m)</label>
-      <input id="boundary" type="number" step="0.1">
-    </div>
+  <button id="checkBtn" style="margin-top:20px;padding:12px 18px;font-size:16px;">
+    Check
+  </button>
+</div>
 
-    <!-- AREA STATUS -->
-    <label class="gov-label" for="areaStatus">Is your property in a special designated area?</label>
-    <select id="areaStatus">
-      <option value="none">No</option>
-      <option value="conservation">Conservation area</option>
-      <option value="national_park">National Park</option>
-      <option value="aonb">Area of Outstanding Natural Beauty</option>
-      <option value="not_sure">Not sure</option>
-    </select>
+<!-- RESULTS -->
+<div class="card result-section" id="resultsCard">
+  <div id="decisionPill"></div>
+  <h2 id="resultTitle"></h2>
+  <p id="resultSummary"></p>
 
-    <!-- LISTED BUILDING -->
-    <label class="gov-label">Is the property listed?</label>
-    <select id="listed">
-      <option value="no">No</option>
-      <option value="yes">Yes</option>
-    </select>
+  <h3>Professional Planning Assessment</h3>
+  <p id="professionalAssessment"></p>
 
-    <button id="checkBtn" class="button">Check</button>
+  <div id="positivesBlock"></div>
+  <div id="risksBlock"></div>
 
-    <hr>
+  <h3>Next Recommended Steps</h3>
+  <p id="recommendations"></p>
+</div>
 
-    <!-- RESULT -->
-    <div id="resultContainer" class="hidden">
-      <div id="decisionPill"></div>
-      <h2>Summary</h2>
-      <p id="summaryText"></p>
-
-      <h3>Professional planning assessment</h3>
-      <p id="professionalAssessment"></p>
-
-      <h3>Key risks</h3>
-      <ul id="risksList"></ul>
-
-      <h3>Positive allowances</h3>
-      <ul id="positiveList"></ul>
-    </div>
-
-  </div>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

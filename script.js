@@ -1,159 +1,131 @@
-/* --------------------------
-   ENVIRONMENT TOGGLE
--------------------------- */
-const USE_DEV = true;   // set false for production
+const workerURL = "https://walker-planning-worker-dev.emichops.workers.dev/";
 
-const WORKER_URL = USE_DEV
-  ? "https://walker-planning-worker-dev.emichops.workers.dev/"
-  : "https://walker-planning-worker.emichops.workers.dev/";
+document.addEventListener("DOMContentLoaded", () => {
+  const projectType = document.getElementById("projectType");
+  const dimFields = document.getElementById("dimension-fields");
+  const checkBtn = document.getElementById("checkBtn");
 
-/* --------------------------
-   ELEMENTS
--------------------------- */
-const postcodeEl = document.getElementById("postcode");
-const propertyEl = document.getElementById("propertyType");
-const projectEl  = document.getElementById("projectType");
-const areaEl     = document.getElementById("areaStatus");
-const listedEl   = document.getElementById("listed");
+  projectType.addEventListener("change", renderDimensions);
+  checkBtn.addEventListener("click", runCheck);
 
-const projEl     = document.getElementById("projection");
-const heightEl   = document.getElementById("height");
-const boundaryEl = document.getElementById("boundary");
-const dimFields  = document.getElementById("dimensionFields");
+  function renderDimensions() {
+    const type = projectType.value;
+    let html = "";
 
-const errorBox   = document.getElementById("errorBox");
-const resultBox  = document.getElementById("resultContainer");
+    const needsDims = {
+      "rear-extension": true,
+      "side-extension": true,
+      "wrap-extension": true,
+      "two-storey": true,
+      "garden-outbuilding": true
+    };
 
-const decisionPillEl = document.getElementById("decisionPill");
-const summaryText    = document.getElementById("summaryText");
-const professionalEl = document.getElementById("professionalAssessment");
-const risksList      = document.getElementById("risksList");
-const positiveList   = document.getElementById("positiveList");
+    if (needsDims[type]) {
+      html = `
+        <label>Projection (metres)</label>
+        <input type="number" id="projection" min="0" step="0.1">
 
-/* --------------------------
-   PROJECT → DIMENSION RULES
--------------------------- */
-const needsDims = new Set([
-  "rear-extension",
-  "side-extension",
-  "wrap-extension",
-  "two-storey",
-  "front-porch",
-  "dormer",
-  "garden-outbuilding",
-  "annexe"
-]);
+        <label>Height (metres)</label>
+        <input type="number" id="height" min="0" step="0.1">
 
-projectEl.addEventListener("change", () => {
-  dimFields.classList.toggle("hidden", !needsDims.has(projectEl.value));
-  clearResults();
-});
+        <label>Distance to boundary (metres)</label>
+        <input type="number" id="boundary" min="0" step="0.1">
+      `;
+    }
 
-/* --------------------------
-   VALIDATION
--------------------------- */
-function validateForm() {
-  if (!postcodeEl.value.trim()) return "Enter a valid postcode.";
-  if (!propertyEl.value) return "Select a property type.";
-  if (!projectEl.value) return "Select a project type.";
-
-  if (listedEl.value === "yes") return null; // listed = always planning → worker handles
-
-  if (needsDims.has(projectEl.value)) {
-    if (!projEl.value) return "Enter projection (m).";
-    if (!heightEl.value) return "Enter height (m).";
-    if (!boundaryEl.value) return "Enter distance to boundary (m).";
+    dimFields.innerHTML = html;
   }
 
-  return null;
-}
+  async function runCheck() {
+    const postcode = document.getElementById("postcode").value.trim();
+    const propertyType = document.getElementById("propertyType").value;
+    const projectTypeVal = document.getElementById("projectType").value;
+    const areaStatus = document.getElementById("areaStatus").value;
+    const listed = document.getElementById("listed").value === "yes";
 
-/* --------------------------
-   CLEAR RESULTS / ERRORS
--------------------------- */
-function clearResults() {
-  errorBox.classList.add("hidden");
-  resultBox.classList.add("hidden");
-}
+    // Basic postcode validation
+    const pcValid = /^[A-Za-z]{1,2}\d[A-Za-z\d]?\s*\d[A-Za-z]{2}$/;
+    if (!pcValid.test(postcode)) {
+      alert("Please enter a valid UK postcode.");
+      return;
+    }
 
-/* --------------------------
-   MAIN REQUEST
--------------------------- */
-document.getElementById("checkBtn").addEventListener("click", async () => {
-  clearResults();
+    if (!propertyType || !projectTypeVal) {
+      alert("Please complete all required fields.");
+      return;
+    }
 
-  const err = validateForm();
-  if (err) {
-    errorBox.textContent = err;
-    errorBox.classList.remove("hidden");
-    return;
-  }
+    let dimensions = {};
+    if (document.getElementById("projection")) {
+      dimensions = {
+        projection: Number(document.getElementById("projection").value || 0),
+        height: Number(document.getElementById("height").value || 0),
+        boundary: Number(document.getElementById("boundary").value || 0)
+      };
 
-  const payload = {
-    postcode: postcodeEl.value.trim(),
-    propertyType: propertyEl.value,
-    projectType: projectEl.value,
-    areaStatus: areaEl.value,
-    listed: listedEl.value,
-    dimensions: needsDims.has(projectEl.value)
-      ? {
-          projection: Number(projEl.value),
-          height: Number(heightEl.value),
-          boundary: Number(boundaryEl.value)
-        }
-      : {}
-  };
+      if (!dimensions.projection || !dimensions.height || !dimensions.boundary) {
+        alert("Please enter all dimension fields.");
+        return;
+      }
+    }
 
-  try {
-    const res = await fetch(WORKER_URL, {
+    const payload = {
+      postcode,
+      propertyType,
+      projectType: projectTypeVal,
+      areaStatus,
+      listed,
+      dimensions
+    };
+
+    const res = await fetch(workerURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
+    const json = await res.json();
+    renderResults(json);
+  }
 
-    if (data.error) {
-      errorBox.textContent = data.error;
-      errorBox.classList.remove("hidden");
-      return;
-    }
+  function renderResults(data) {
+    const resultsCard = document.getElementById("resultsCard");
+    const pill = document.getElementById("decisionPill");
+    const title = document.getElementById("resultTitle");
+    const summary = document.getElementById("resultSummary");
 
-    populateResults(data);
+    const posBlock = document.getElementById("positivesBlock");
+    const riskBlock = document.getElementById("risksBlock");
+    const nextSteps = document.getElementById("recommendations");
 
-  } catch (e) {
-    errorBox.textContent = "A network or server error occurred.";
-    errorBox.classList.remove("hidden");
+    // Pill
+    pill.innerHTML = `<span class="pill ${data.decision}">${data.decision_label}</span>`;
+
+    title.textContent = "Result of Your Planning Assessment";
+    summary.textContent = data.summary;
+
+    // Positives
+    posBlock.innerHTML = data.positive?.length
+      ? `<h3>Positive Findings</h3><ul>${data.positive.map(p => `<li>${p}</li>`).join("")}</ul>`
+      : "";
+
+    // Risks
+    riskBlock.innerHTML = data.keyRisks?.length
+      ? `<h3>Key Risks</h3><ul>${data.keyRisks.map(r => `<li>${r}</li>`).join("")}</ul>`
+      : "";
+
+    document.getElementById("professionalAssessment").textContent =
+      data.professionalAssessment;
+
+    // Senior Planner Recommendations
+    nextSteps.innerHTML =
+      data.decision === "green"
+        ? "You can likely proceed under permitted development. We recommend confirming measurements and keeping written evidence."
+        : data.decision === "amber"
+        ? "Consider reducing the size, increasing distance to boundaries, or seeking early advice from a planning officer."
+        : "Prepare for a planning application. A planner can advise on drawings, justifications, and possible design changes."
+
+    resultsCard.style.display = "block";
+    resultsCard.scrollIntoView({ behavior: "smooth" });
   }
 });
-
-/* --------------------------
-   RENDER RESULTS
--------------------------- */
-function populateResults(data) {
-  const pillText = data.decision_label;
-  const pillClass =
-    data.decision === "green" ? "pill-green" :
-    data.decision === "amber" ? "pill-amber" :
-    "pill-red";
-
-  decisionPillEl.innerHTML = `<span class="pill ${pillClass}">${pillText}</span>`;
-  summaryText.textContent = data.summary;
-  professionalEl.textContent = data.professionalAssessment;
-
-  risksList.innerHTML = "";
-  data.keyRisks.forEach(r => {
-    const li = document.createElement("li");
-    li.textContent = r;
-    risksList.appendChild(li);
-  });
-
-  positiveList.innerHTML = "";
-  data.positive.forEach(p => {
-    const li = document.createElement("li");
-    li.textContent = p;
-    positiveList.appendChild(li);
-  });
-
-  resultBox.classList.remove("hidden");
-}
