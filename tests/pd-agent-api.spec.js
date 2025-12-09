@@ -72,7 +72,7 @@ const scenarios = [
   },
 
   {
-    name: "Rear extension — 5m projection — England — AMBER",
+    name: "Rear extension — 5m projection — England — GREEN",
     payload: {
       postcode: "OX1 2AA",
       propertyType: "Detached",
@@ -81,7 +81,7 @@ const scenarios = [
       propertyStatus: "none",
       dimensions: { projection: 5, height: 3, boundary: 3 }
     },
-    expectedDecision: "amber"
+    expectedDecision: "green"
   },
 
   {
