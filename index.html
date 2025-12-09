@@ -13,10 +13,6 @@
       background: #f7f7f7;
     }
 
-    h1 {
-      margin-top: 0;
-    }
-
     .card {
       background: white;
       padding: 20px;
@@ -26,50 +22,31 @@
       margin: 0 auto 20px;
     }
 
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: 600;
-    }
-
+    label { display:block; margin-top:12px; font-weight:600; }
     input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    .result-section {
-      display: none;
-      margin-top: 30px;
+      width:100%; padding:10px; margin-top:4px;
+      border:1px solid #ccc; border-radius:6px;
     }
 
     .pill {
-      display: inline-block;
-      padding: 10px 18px;
-      border-radius: 999px;
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: white;
-      font-size: 15px;
+      display:inline-block;
+      padding:10px 18px;
+      border-radius:999px;
+      font-weight:700;
+      margin-bottom:12px;
+      color:white;
+      font-size:15px;
     }
+    .green { background:#2e7d32; }
+    .amber { background:#f9a825; }
+    .red { background:#c62828; }
 
-    .green { background: #2e7d32; }
-    .amber { background: #f9a825; }
-    .red   { background: #c62828; }
-
-    ul {
-      padding-left: 20px;
-    }
+    ul { padding-left:20px; }
   </style>
 </head>
 
 <body>
 
-<!-- ======================================== -->
-<!-- INPUT CARD -->
-<!-- ======================================== -->
 <div class="card">
   <h1>Do I Need Planning Permission?</h1>
   <p>Answer a few quick questions to assess whether your proposal is likely permitted development.</p>
@@ -101,7 +78,6 @@
     <option value="annexe">Annexe</option>
   </select>
 
-  <!-- Dynamic dimensions -->
   <div id="dimension-fields"></div>
 
   <label for="areaStatus">Is your property in a special area?</label>
@@ -124,14 +100,21 @@
   </button>
 </div>
 
-<!-- ======================================== -->
+<!-- ============================= -->
 <!-- RESULTS CARD -->
-<!-- ======================================== -->
-<div class="card result-section" id="resultsCard">
+<!-- ============================= -->
+<div class="card result-section" id="resultsCard" style="display:none;">
+
   <div id="decisionPill"></div>
 
   <h2 id="resultTitle"></h2>
   <p id="resultSummary"></p>
+
+  <!-- NEW narrative blocks -->
+  <div id="narrativeIntro"></div>
+  <div id="developmentStatus"></div>
+  <div id="councilNote"></div>
+  <div id="constraintsNote"></div>
 
   <h3>Professional Planning Assessment</h3>
   <p id="professionalAssessment"></p>
