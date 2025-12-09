@@ -211,8 +211,8 @@ const stirlingCases = [
   // Side Extensions
   // -----------------------------
   {
-    name: "Dunblane — side extension — 3.2m — AMBER",
-    expected: "amber",
+    name: "Dunblane — side extension — 3.2m — RED",
+    expected: "red",
     payload: {
       postcode: "FK15 0HQ",
       propertyType: "Semi-detached",
