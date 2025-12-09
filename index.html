@@ -5,34 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Do I Need Planning Permission?</title>
 
-  <!-- SIMPLE INLINE STYLES TO AVOID MIME ERRORS -->
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+      font-family: system-ui, -apple-system, sans-serif;
       background: #f7f7f7;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      line-height: 1.55;
+      color: #222;
     }
 
     .container {
-      max-width: 760px;
+      max-width: 900px;
       margin: 0 auto;
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      padding: 32px 20px;
     }
 
     h1 {
-      margin-top: 0;
+      margin-bottom: 12px;
       font-size: 28px;
-      font-weight: 700;
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
     label {
-      display: block;
-      margin-top: 16px;
       font-weight: 600;
+      margin-top: 16px;
+      display: block;
     }
 
     input, select {
@@ -45,134 +50,112 @@
     }
 
     button {
-      width: 100%;
       margin-top: 24px;
+      width: 100%;
       padding: 14px;
-      background: #0f2f53;
+      background: #0a2342;
       color: white;
+      font-size: 16px;
       border: none;
       border-radius: 6px;
-      font-size: 16px;
       cursor: pointer;
       font-weight: 600;
     }
-
-    button:hover {
-      background: #143a66;
-    }
-
-    /* RESULTS CARD */
-    #resultsCard {
-      display: none;
-      background: white;
-      padding: 24px;
-      margin-top: 28px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
+    button:hover { background: #0d2d57; }
 
     .pill {
       display: inline-block;
-      padding: 10px 18px;
-      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 15px;
       font-weight: 700;
+      border-radius: 20px;
+      margin-bottom: 20px;
       color: white;
-      margin-bottom: 18px;
-      font-size: 14px;
     }
 
-    .green { background: #3c8d40; }
-    .amber { background: #d9a441; }
-    .red { background: #c9483d; }
+    .green { background: #4c8c45; }
+    .amber { background: #d29b2b; }
+    .red { background: #b63a33; }
 
-    h2 {
-      margin-top: 0;
-      font-size: 22px;
+    .section-title {
+      margin-top: 28px;
+      font-size: 20px;
+      font-weight: 700;
     }
 
-    h3 {
-      margin-top: 18px;
-    }
-
-    ul {
-      margin-top: 8px;
-      padding-left: 22px;
-    }
+    ul { margin: 8px 0 0 20px; }
   </style>
 </head>
 
 <body>
+  <div class="container">
+    <div class="card">
+      <h1>Do I Need Planning Permission?</h1>
+      <p>Answer a few quick questions to assess whether your proposal is likely permitted development.</p>
 
-<div class="container">
-  <h1>Do I Need Planning Permission?</h1>
-  <p>Answer a few quick questions to assess whether your proposal is likely permitted development.</p>
+      <label>Postcode</label>
+      <input id="postcode" placeholder="e.g. PH7 4BL" />
 
-  <label for="postcode">Postcode</label>
-  <input id="postcode" placeholder="PH7 4BL" />
+      <label>Property Type</label>
+      <select id="propertyType">
+        <option value="">Select…</option>
+        <option>Detached</option>
+        <option>Semi-detached</option>
+        <option>Terraced</option>
+        <option>Flat</option>
+      </select>
 
-  <label for="propertyType">Property Type</label>
-  <select id="propertyType">
-    <option value="">Select…</option>
-    <option>Detached</option>
-    <option>Semi-detached</option>
-    <option>Terraced</option>
-    <option>Flat</option>
-  </select>
+      <label>Project Type</label>
+      <select id="projectType">
+        <option value="">Select…</option>
+        <option value="rear-extension">Rear extension</option>
+        <option value="side-extension">Side extension</option>
+        <option value="wrap-extension">Wrap extension</option>
+        <option value="two-storey">Two-storey extension</option>
+        <option value="dormer">Dormer</option>
+        <option value="loft">Loft conversion</option>
+        <option value="front-porch">Front porch</option>
+        <option value="garage">Garage conversion</option>
+        <option value="garden-outbuilding">Garden outbuilding</option>
+        <option value="annexe">Annexe</option>
+      </select>
 
-  <label for="projectType">Project Type</label>
-  <select id="projectType">
-    <option value="">Select…</option>
-    <option value="rear-extension">Rear extension</option>
-    <option value="side-extension">Side extension</option>
-    <option value="wrap-extension">Wrap extension</option>
-    <option value="two-storey">Two-storey extension</option>
-    <option value="loft">Loft conversion</option>
-    <option value="dormer">Dormer</option>
-    <option value="garage">Garage conversion</option>
-    <option value="garden-outbuilding">Garden building</option>
-    <option value="annexe">Annexe</option>
-  </select>
+      <div id="dimension-fields"></div>
 
-  <!-- DYNAMIC DIMENSIONS INSERTED HERE -->
-  <div id="dimension-fields"></div>
+      <label>Is your property in a special area?</label>
+      <select id="areaStatus">
+        <option value="none">No</option>
+        <option value="conservation">Conservation area</option>
+        <option value="national_park">National park</option>
+        <option value="aonb">Area of Outstanding Natural Beauty</option>
+        <option value="not_sure">I'm not sure</option>
+      </select>
 
-  <label for="areaStatus">Is your property in a special area?</label>
-  <select id="areaStatus">
-    <option value="not_sure">I'm not sure</option>
-    <option value="none">No</option>
-    <option value="conservation">Conservation area</option>
-    <option value="national_park">National Park</option>
-    <option value="aonb">Area of Outstanding Natural Beauty</option>
-    <option value="world_heritage">World Heritage Site</option>
-  </select>
+      <label>Is the property a listed building?</label>
+      <select id="listed">
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
 
-  <label for="listed">Is the property a listed building?</label>
-  <select id="listed">
-    <option value="no">No</option>
-    <option value="yes">Yes</option>
-  </select>
+      <button id="checkBtn">Check</button>
+    </div>
 
-  <button id="checkBtn">Check</button>
-</div>
+    <!-- RESULTS CARD -->
+    <div id="resultsCard" class="card" style="display:none;">
+      <div id="decisionPill"></div>
 
-<!-- RESULTS CARD -->
-<div id="resultsCard" class="container">
-  <div id="decisionPill"></div>
+      <h2 id="resultTitle">Result of Your Planning Assessment</h2>
+      <p id="resultSummary"></p>
 
-  <h2 id="resultTitle">Result of Your Planning Assessment</h2>
-  <p id="resultSummary"></p>
+      <div id="introSection"></div>
+      <div id="proposalSection"></div>
+      <div id="pdContextSection"></div>
+      <div id="riskSection"></div>
+      <div id="recommendSection"></div>
+      <div id="conclusionSection"></div>
+    </div>
+  </div>
 
-  <h3>Professional Planning Assessment</h3>
-  <p id="professionalAssessment"></p>
-
-  <div id="risksBlock"></div>
-  <div id="positivesBlock"></div>
-
-  <h3>Next Recommended Steps</h3>
-  <p id="recommendations"></p>
-</div>
-
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
