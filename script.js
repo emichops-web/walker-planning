@@ -1,76 +1,108 @@
-// ---------------------------------------------------------------
-// CONFIG: Worker endpoint (DEV)
-// ---------------------------------------------------------------
-const WORKER_URL = "https://walker-planning-worker-dev.emichops.workers.dev/";
+/* --------------------------
+   ENVIRONMENT TOGGLE
+-------------------------- */
+const USE_DEV = true;   // set false for production
 
-// ---------------------------------------------------------------
-// DOM ELEMENTS
-// ---------------------------------------------------------------
-const form = document.getElementById("pd-form");
-const projectType = document.getElementById("projectType");
-const dimensionFields = document.getElementById("dimension-fields");
-const resultSection = document.getElementById("result-section");
-const checkBtn = document.getElementById("check-button");
+const WORKER_URL = USE_DEV
+  ? "https://walker-planning-worker-dev.emichops.workers.dev/"
+  : "https://walker-planning-worker.emichops.workers.dev/";
 
-// ---------------------------------------------------------------
-// DYNAMIC DIMENSIONS BASED ON PROJECT TYPE
-// ---------------------------------------------------------------
-projectType.addEventListener("change", () => {
-  const type = projectType.value;
-  let html = "";
+/* --------------------------
+   ELEMENTS
+-------------------------- */
+const postcodeEl = document.getElementById("postcode");
+const propertyEl = document.getElementById("propertyType");
+const projectEl  = document.getElementById("projectType");
+const areaEl     = document.getElementById("areaStatus");
+const listedEl   = document.getElementById("listed");
 
-  const needsDims = [
-    "rear-extension",
-    "side-extension",
-    "wrap-extension",
-    "two-storey",
-    "garden-outbuilding",
-    "dormer"
-  ];
+const projEl     = document.getElementById("projection");
+const heightEl   = document.getElementById("height");
+const boundaryEl = document.getElementById("boundary");
+const dimFields  = document.getElementById("dimensionFields");
 
-  if (needsDims.includes(type)) {
-    html += `
-      <label>Projection (m)</label>
-      <input id="projection" type="number" step="0.1" />
+const errorBox   = document.getElementById("errorBox");
+const resultBox  = document.getElementById("resultContainer");
 
-      <label>Height (m)</label>
-      <input id="height" type="number" step="0.1" />
+const decisionPillEl = document.getElementById("decisionPill");
+const summaryText    = document.getElementById("summaryText");
+const professionalEl = document.getElementById("professionalAssessment");
+const risksList      = document.getElementById("risksList");
+const positiveList   = document.getElementById("positiveList");
 
-      <label>Distance to nearest boundary (m)</label>
-      <input id="boundary" type="number" step="0.1" />
-    `;
-  }
+/* --------------------------
+   PROJECT → DIMENSION RULES
+-------------------------- */
+const needsDims = new Set([
+  "rear-extension",
+  "side-extension",
+  "wrap-extension",
+  "two-storey",
+  "front-porch",
+  "dormer",
+  "garden-outbuilding",
+  "annexe"
+]);
 
-  dimensionFields.innerHTML = html;
+projectEl.addEventListener("change", () => {
+  dimFields.classList.toggle("hidden", !needsDims.has(projectEl.value));
+  clearResults();
 });
 
-// ---------------------------------------------------------------
-// HANDLE FORM SUBMIT
-// ---------------------------------------------------------------
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+/* --------------------------
+   VALIDATION
+-------------------------- */
+function validateForm() {
+  if (!postcodeEl.value.trim()) return "Enter a valid postcode.";
+  if (!propertyEl.value) return "Select a property type.";
+  if (!projectEl.value) return "Select a project type.";
 
-  checkBtn.disabled = true;
-  checkBtn.innerText = "Checking...";
+  if (listedEl.value === "yes") return null; // listed = always planning → worker handles
+
+  if (needsDims.has(projectEl.value)) {
+    if (!projEl.value) return "Enter projection (m).";
+    if (!heightEl.value) return "Enter height (m).";
+    if (!boundaryEl.value) return "Enter distance to boundary (m).";
+  }
+
+  return null;
+}
+
+/* --------------------------
+   CLEAR RESULTS / ERRORS
+-------------------------- */
+function clearResults() {
+  errorBox.classList.add("hidden");
+  resultBox.classList.add("hidden");
+}
+
+/* --------------------------
+   MAIN REQUEST
+-------------------------- */
+document.getElementById("checkBtn").addEventListener("click", async () => {
+  clearResults();
+
+  const err = validateForm();
+  if (err) {
+    errorBox.textContent = err;
+    errorBox.classList.remove("hidden");
+    return;
+  }
 
   const payload = {
-    postcode: document.getElementById("postcode").value.trim(),
-    propertyType: document.getElementById("propertyType").value,
-    projectType: document.getElementById("projectType").value,
-    areaStatus: document.getElementById("areaStatus").value,
-    description: document.getElementById("description").value.trim(),
-    dimensions: {}
+    postcode: postcodeEl.value.trim(),
+    propertyType: propertyEl.value,
+    projectType: projectEl.value,
+    areaStatus: areaEl.value,
+    listed: listedEl.value,
+    dimensions: needsDims.has(projectEl.value)
+      ? {
+          projection: Number(projEl.value),
+          height: Number(heightEl.value),
+          boundary: Number(boundaryEl.value)
+        }
+      : {}
   };
-
-  // Only include dimensions if fields exist
-  const projEl = document.getElementById("projection");
-  if (projEl) {
-    payload.dimensions = {
-      projection: parseFloat(projEl.value) || 0,
-      height: parseFloat(document.getElementById("height").value) || 0,
-      boundary: parseFloat(document.getElementById("boundary").value) || 0
-    };
-  }
 
   try {
     const res = await fetch(WORKER_URL, {
@@ -79,56 +111,49 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify(payload)
     });
 
-    const json = await res.json();
-    displayResults(json);
+    const data = await res.json();
 
-  } catch (err) {
-    alert("There was an error contacting the assessment service.");
+    if (data.error) {
+      errorBox.textContent = data.error;
+      errorBox.classList.remove("hidden");
+      return;
+    }
+
+    populateResults(data);
+
+  } catch (e) {
+    errorBox.textContent = "A network or server error occurred.";
+    errorBox.classList.remove("hidden");
   }
-
-  checkBtn.disabled = false;
-  checkBtn.innerText = "Check";
 });
 
-// ---------------------------------------------------------------
-// RENDER RESULTS
-// ---------------------------------------------------------------
-function displayResults(data) {
-  resultSection.style.display = "block";
+/* --------------------------
+   RENDER RESULTS
+-------------------------- */
+function populateResults(data) {
+  const pillText = data.decision_label;
+  const pillClass =
+    data.decision === "green" ? "pill-green" :
+    data.decision === "amber" ? "pill-amber" :
+    "pill-red";
 
-  const banner = document.getElementById("decision-banner");
-  banner.className = data.decision;
-  banner.innerText = data.decision.toUpperCase();
+  decisionPillEl.innerHTML = `<span class="pill ${pillClass}">${pillText}</span>`;
+  summaryText.textContent = data.summary;
+  professionalEl.textContent = data.professionalAssessment;
 
-  document.getElementById("decision-label").innerText = data.decision_label;
-  document.getElementById("professionalAssessment").innerText = data.professionalAssessment;
-  document.getElementById("summary").innerText = data.summary;
-
-  // Positives
-  const posList = document.getElementById("positive-list");
-  posList.innerHTML = "";
-  data.positive.forEach(p => {
-    const li = document.createElement("li");
-    li.innerText = p;
-    posList.appendChild(li);
-  });
-
-  // Risks
-  const riskList = document.getElementById("risk-list");
-  riskList.innerHTML = "";
+  risksList.innerHTML = "";
   data.keyRisks.forEach(r => {
     const li = document.createElement("li");
-    li.innerText = r;
-    riskList.appendChild(li);
+    li.textContent = r;
+    risksList.appendChild(li);
   });
 
-  // Location
-  document.getElementById("location").innerText =
-    `${data.location.town}, ${data.location.authority}, ${data.location.nation}`;
+  positiveList.innerHTML = "";
+  data.positive.forEach(p => {
+    const li = document.createElement("li");
+    li.textContent = p;
+    positiveList.appendChild(li);
+  });
 
-  // Reset button
-  document.getElementById("new-check").onclick = () => {
-    resultSection.style.display = "none";
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  resultBox.classList.remove("hidden");
 }

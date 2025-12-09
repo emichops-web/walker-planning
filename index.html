@@ -2,96 +2,172 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Permitted Development Checker — Stirling</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Planning Permission Checker – Stirling</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f2f1;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 30px;
+      background: #ffffff;
+      margin-top: 20px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .gov-label {
+      display: block;
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #b1b4b6;
+      font-size: 16px;
+      border-radius: 4px;
+    }
+
+    .button {
+      background: #00703c;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 4px;
+      border: none;
+      font-size: 18px;
+      margin-top: 25px;
+      cursor: pointer;
+    }
+    .button:hover { background: #005a30; }
+
+    .pill {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 4px;
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    .pill-green { background: #00703c; }
+    .pill-amber { background: #ffbf47; color: #000; }
+    .pill-red { background: #d4351c; }
+
+    .hidden { display: none; }
+
+    .error {
+      color: #d4351c;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    hr { margin: 30px 0; border: none; border-top: 1px solid #b1b4b6; }
+  </style>
 </head>
 
 <body>
-  <header class="top-header">
-    <h1>Permitted Development Checker</h1>
-    <p class="subtitle">Fast planning guidance aligned with Stirling Council practice</p>
-  </header>
+  <div class="container">
 
-  <main class="container">
-    <section id="form-section">
-      <h2>Your Proposal</h2>
+    <h1>Do I need planning permission?</h1>
+    <p>This tool provides quick guidance based on Stirling Council rules and national legislation.</p>
 
-      <form id="pd-form">
-        <!-- POSTCODE -->
-        <label for="postcode">Postcode *</label>
-        <input type="text" id="postcode" placeholder="e.g., FK8 2HG" required />
+    <!-- Errors -->
+    <div id="errorBox" class="error hidden"></div>
 
-        <!-- PROPERTY TYPE -->
-        <label for="propertyType">Property Type *</label>
-        <select id="propertyType" required>
-          <option value="">Select...</option>
-          <option>Detached</option>
-          <option>Semi-detached</option>
-          <option>Terraced</option>
-          <option>Flat</option>
-        </select>
+    <!-- POSTCODE -->
+    <label class="gov-label" for="postcode">Postcode</label>
+    <input id="postcode" type="text" placeholder="e.g. FK8 2AQ">
 
-        <!-- PROJECT TYPE -->
-        <label for="projectType">Project Type *</label>
-        <select id="projectType" required>
-          <option value="">Select...</option>
-          <option value="rear-extension">Rear Extension</option>
-          <option value="side-extension">Side Extension</option>
-          <option value="wrap-extension">Wrap-around Extension</option>
-          <option value="two-storey">Two-storey Extension</option>
-          <option value="front-porch">Front Porch</option>
-          <option value="dormer">Dormer / Roof Extension</option>
-          <option value="loft">Internal Loft Conversion</option>
-          <option value="garage">Garage Conversion</option>
-          <option value="garden-outbuilding">Garden Building</option>
-          <option value="annexe">Annexe</option>
-        </select>
+    <!-- PROPERTY TYPE -->
+    <label class="gov-label" for="propertyType">Property type</label>
+    <select id="propertyType">
+      <option value="">Select...</option>
+      <option>Detached</option>
+      <option>Semi-detached</option>
+      <option>Terraced</option>
+      <option>Flat</option>
+    </select>
 
-        <!-- OPTIONAL PROJECT DESCRIPTION -->
-        <label for="description">Project Description (optional)</label>
-        <textarea id="description" placeholder="Describe your proposal..."></textarea>
+    <!-- PROJECT TYPE -->
+    <label class="gov-label" for="projectType">Project type</label>
+    <select id="projectType">
+      <option value="">Select...</option>
+      <option value="rear-extension">Rear extension</option>
+      <option value="side-extension">Side extension</option>
+      <option value="wrap-extension">Wrap-around extension</option>
+      <option value="two-storey">Two-storey extension</option>
+      <option value="front-porch">Porch</option>
+      <option value="dormer">Dormer</option>
+      <option value="loft">Loft conversion</option>
+      <option value="garage">Garage conversion</option>
+      <option value="garden-outbuilding">Garden building / shed</option>
+      <option value="annexe">Annexe</option>
+    </select>
 
-        <!-- AREA STATUS -->
-        <label for="areaStatus">Is your property in a special area?</label>
-        <select id="areaStatus">
-          <option value="not_sure">Not sure</option>
-          <option value="none">No</option>
-          <option value="conservation">Conservation Area</option>
-          <option value="national_park">National Park</option>
-          <option value="aonb">Area of Outstanding Natural Beauty</option>
-        </select>
+    <!-- DIMENSIONS (dynamic) -->
+    <div id="dimensionFields" class="hidden">
+      <label class="gov-label">Projection (m)</label>
+      <input id="projection" type="number" step="0.1">
 
-        <!-- DIMENSIONS (AUTO DYNAMIC) -->
-        <div id="dimension-fields"></div>
+      <label class="gov-label">Height (m)</label>
+      <input id="height" type="number" step="0.1">
 
-        <!-- BUTTON -->
-        <button type="submit" id="check-button">Check</button>
-      </form>
-    </section>
+      <label class="gov-label">Distance to boundary (m)</label>
+      <input id="boundary" type="number" step="0.1">
+    </div>
 
-    <!-- RESULTS -->
-    <section id="result-section" style="display:none;">
-      <h2>Assessment Result</h2>
-      <div id="decision-banner"></div>
-      <p id="decision-label"></p>
-      <p id="professionalAssessment" class="pro-text"></p>
+    <!-- AREA STATUS -->
+    <label class="gov-label" for="areaStatus">Is your property in a special designated area?</label>
+    <select id="areaStatus">
+      <option value="none">No</option>
+      <option value="conservation">Conservation area</option>
+      <option value="national_park">National Park</option>
+      <option value="aonb">Area of Outstanding Natural Beauty</option>
+      <option value="not_sure">Not sure</option>
+    </select>
 
-      <h3>Summary</h3>
-      <p id="summary"></p>
+    <!-- LISTED BUILDING -->
+    <label class="gov-label">Is the property listed?</label>
+    <select id="listed">
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
 
-      <h3>Positive Factors</h3>
-      <ul id="positive-list"></ul>
+    <button id="checkBtn" class="button">Check</button>
 
-      <h3>Key Risks</h3>
-      <ul id="risk-list"></ul>
+    <hr>
 
-      <h3>Location</h3>
-      <p id="location"></p>
+    <!-- RESULT -->
+    <div id="resultContainer" class="hidden">
+      <div id="decisionPill"></div>
+      <h2>Summary</h2>
+      <p id="summaryText"></p>
 
-      <button id="new-check">Check Another Proposal</button>
-    </section>
-  </main>
+      <h3>Professional planning assessment</h3>
+      <p id="professionalAssessment"></p>
+
+      <h3>Key risks</h3>
+      <ul id="risksList"></ul>
+
+      <h3>Positive allowances</h3>
+      <ul id="positiveList"></ul>
+    </div>
+
+  </div>
 
   <script src="script.js"></script>
 </body>
