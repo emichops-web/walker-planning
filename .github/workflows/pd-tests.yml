@@ -19,5 +19,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
       - name: Run API Regression Tests
         run: npx playwright test --workers=1
