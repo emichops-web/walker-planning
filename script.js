@@ -1,159 +1,202 @@
-document.addEventListener("DOMContentLoaded", () => {
+// ------------------------------------------------------
+// Helper: Select DOM element safely
+// ------------------------------------------------------
+function $(id) {
+  return document.getElementById(id);
+}
 
-  const projectType = document.getElementById("projectType");
-  const dimensionFields = document.getElementById("dimension-fields");
-  const runCheckBtn = document.getElementById("runCheck");
+// ------------------------------------------------------
+// ENDPOINT SELECTION (dev vs production)
+// ------------------------------------------------------
+let API_ENDPOINT;
 
-  // ------------------------------------------------------
-  // 1. Dynamic dimension fields by project type
-  // ------------------------------------------------------
-  function renderDimensionFields(type) {
-    let html = "";
+const host = window.location.hostname;
 
-    const needsDims = [
-      "rear-extension",
-      "side-extension",
-      "wrap-extension",
-      "two-storey"
-    ];
+// Dev / preview environments
+if (
+  host.includes("localhost") ||
+  host.includes("127.0.0.1") ||
+  host.includes("pages.dev")
+) {
+  API_ENDPOINT = "https://walker-planning-worker-dev.emichops.workers.dev/";
+}
+// Production domain
+else if (host.includes("walkerplanning.co.uk")) {
+  API_ENDPOINT = "https://walker-planning-worker.emichops.workers.dev/api";
+}
+// Fallback
+else {
+  API_ENDPOINT = "https://walker-planning-worker.emichops.workers.dev/api";
+}
 
-    const needsOutbuildingDims = ["garden-outbuilding"];
+// ------------------------------------------------------
+// DYNAMIC DIMENSION FIELDS
+// ------------------------------------------------------
+const projectTypeEl = $("projectType");
+const dimensionFields = $("dimension-fields");
 
-    if (needsDims.includes(type)) {
-      html = `
-        <label>Projection (m)</label>
-        <input id="projection" type="number" min="0" step="0.1">
+const requiresDims = [
+  "rear-extension",
+  "side-extension",
+  "wrap-extension",
+  "two-storey",
+  "garden-outbuilding",
+  "dormer"
+];
 
-        <label>Height (m)</label>
-        <input id="height" type="number" min="0" step="0.1">
+// Render dimension fields based on project type
+function renderDimensionFields() {
+  if (!projectTypeEl || !dimensionFields) return;
 
-        <label>Nearest boundary distance (m)</label>
-        <input id="boundary" type="number" min="0" step="0.1">
-      `;
-    }
+  const type = projectTypeEl.value;
 
-    if (needsOutbuildingDims.includes(type)) {
-      html = `
-        <label>Height (m)</label>
-        <input id="height" type="number" min="0" step="0.1">
-
-        <label>Nearest boundary distance (m)</label>
-        <input id="boundary" type="number" min="0" step="0.1">
-      `;
-    }
-
-    dimensionFields.innerHTML = html;
+  if (!requiresDims.includes(type)) {
+    dimensionFields.innerHTML = "";
+    return;
   }
 
-  // initial call
-  renderDimensionFields(projectType.value);
+  dimensionFields.innerHTML = `
+      <label>Projection (m)</label>
+      <input id="projection" type="number" step="0.1" />
 
-  projectType.addEventListener("change", () => {
-    renderDimensionFields(projectType.value);
-  });
+      <label>Height (m)</label>
+      <input id="height" type="number" step="0.1" />
 
-  // ------------------------------------------------------
-  // 2. Submit handler — calls Worker API
-  // ------------------------------------------------------
-  runCheckBtn.addEventListener("click", async () => {
-    const postcode = document.getElementById("postcode").value.trim();
-    const propertyType = document.getElementById("propertyType").value;
-    const project = document.getElementById("projectType").value;
-    const areaStatus = document.getElementById("areaStatus").value;
-    const propertyStatus = document.getElementById("propertyStatus").value;
-    const description = document.getElementById("description").value;
+      <label>Nearest boundary distance (m)</label>
+      <input id="boundary" type="number" step="0.1" />
+  `;
+}
 
-    // collect dims if they exist
-    const projection = document.getElementById("projection")?.value || null;
-    const height = document.getElementById("height")?.value || null;
-    const boundary = document.getElementById("boundary")?.value || null;
+if (projectTypeEl) {
+  projectTypeEl.addEventListener("change", renderDimensionFields);
+  renderDimensionFields(); // initial
+}
 
+// ------------------------------------------------------
+// HANDLE SUBMIT
+// ------------------------------------------------------
+const runBtn = $("runCheck");
+const resultBox = $("result-box");
+
+async function runAssessment() {
+  try {
+    if (!runBtn) return;
+
+    runBtn.disabled = true;
+    runBtn.innerText = "Checking...";
+
+    // ------------------------------------------------------
+    // Build request payload
+    // ------------------------------------------------------
     const payload = {
-      postcode,
-      propertyType,
-      projectType: project,
-      areaStatus,
-      propertyStatus,
-      description,
-      dimensions: {
-        projection: projection ? parseFloat(projection) : null,
-        height: height ? parseFloat(height) : null,
-        boundary: boundary ? parseFloat(boundary) : null
-      }
+      postcode: $("postcode")?.value || "",
+      propertyType: $("propertyType")?.value || "",
+      projectType: $("projectType")?.value || "",
+      areaStatus: $("areaStatus")?.value || "not_sure",
+      propertyStatus: $("propertyStatus")?.value || "",
+      projectDescription: $("description")?.value || "",
+      dimensions: {}
     };
 
-    let endpoint =
-      window.location.hostname.includes("localhost") ||
-      window.location.hostname.includes("pages.dev")
-        ? "https://walker-planning-worker-dev.emichops-web.workers.dev"
-        : "https://api.walkerplanning.co.uk/api";
+    // Only include dims if present
+    const projEl = $("projection");
+    const heightEl = $("height");
+    const boundaryEl = $("boundary");
 
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+    if (projEl) payload.dimensions.projection = parseFloat(projEl.value) || 0;
+    if (heightEl) payload.dimensions.height = parseFloat(heightEl.value) || 0;
+    if (boundaryEl) payload.dimensions.boundary = parseFloat(boundaryEl.value) || 0;
 
-      const json = await res.json();
-      renderResult(json);
+    // ------------------------------------------------------
+    // Send API request
+    // ------------------------------------------------------
+    const res = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-    } catch (err) {
-      alert("Error contacting the assessment service.");
-      console.error(err);
+    if (!res.ok) {
+      throw new Error("API returned " + res.status);
     }
-  });
 
-  // ------------------------------------------------------
-  // 3. Render result card
-  // ------------------------------------------------------
-  function renderResult(data) {
-    const card = document.getElementById("result-card");
-    const banner = document.getElementById("result-banner");
-    const summaryText = document.getElementById("summary-text");
-    const riskList = document.getElementById("risk-list");
-    const posList = document.getElementById("positive-list");
-    const assessmentText = document.getElementById("assessment-text");
+    const data = await res.json();
 
-    // banner colour + label
-    banner.className = "result-banner";
-    banner.classList.add(
-      data.decision === "green"
-        ? "green"
-        : data.decision === "amber"
-        ? "amber"
-        : "red"
-    );
-    banner.textContent = data.decision_label;
+    // ------------------------------------------------------
+    // Render Result
+    // ------------------------------------------------------
+    renderResult(data);
 
-    // summary
-    summaryText.textContent = data.summary || "";
-
-    // positive
-    posList.innerHTML = "";
-    (data.positive || []).forEach((p) => {
-      let li = document.createElement("li");
-      li.textContent = p;
-      posList.appendChild(li);
-    });
-
-    // risks
-    riskList.innerHTML = "";
-    (data.risks || []).forEach((r) => {
-      let li = document.createElement("li");
-      li.textContent = r;
-      riskList.appendChild(li);
-    });
-
-    // professional assessment
-    assessmentText.textContent =
-      data.professionalAssessment ||
-      (data.decision === "green"
-        ? "Your proposal appears to fall within permitted development rules."
-        : data.decision === "amber"
-        ? "A planning officer should review the details to confirm compliance."
-        : "Planning permission is likely to be required for this proposal.");
-
-    card.classList.remove("hidden");
+  } catch (err) {
+    console.error(err);
+    alert("Error contacting the assessment service.");
+  } finally {
+    runBtn.disabled = false;
+    runBtn.innerText = "Run Feasibility Check";
   }
-});
+}
+
+// ------------------------------------------------------
+// RENDER RESULT CARD
+// ------------------------------------------------------
+function renderResult(data) {
+  if (!resultBox) return;
+
+  const {
+    decision = "amber",
+    decision_label = "",
+    summary = "",
+    positive = [],
+    risks = [],
+    professionalAssessment = "",
+    nation = "",
+    authority = "",
+    town = ""
+  } = data;
+
+  // Badge colour
+  let color = "#F7C948"; // amber
+  if (decision === "green") color = "#4CAF50";
+  if (decision === "red") color = "#E57373";
+
+  resultBox.innerHTML = `
+    <div style="
+      background: ${color}; 
+      padding: 10px 15px; 
+      border-radius: 6px; 
+      font-weight: bold; 
+      margin-bottom: 15px;">
+      ${decision_label}
+    </div>
+
+    <h3>Summary</h3>
+    <p>${summary}</p>
+
+    <h3>Positive Factors</h3>
+    <ul>
+      ${positive.length ? positive.map(p => `<li>${p}</li>`).join("") : "<li>No specific positive factors identified.</li>"}
+    </ul>
+
+    <h3>Key Risks</h3>
+    <ul>
+      ${risks.length ? risks.map(r => `<li>${r}</li>`).join("") : "<li>No specific risks identified.</li>"}
+    </ul>
+
+    <h3>Professional Assessment</h3>
+    <p>${professionalAssessment || "A planning officer should review this proposal."}</p>
+
+    <h3>Location</h3>
+    <p>
+      <strong>Town:</strong> ${town || "Unknown"}<br>
+      <strong>Authority:</strong> ${authority || "Unknown"}<br>
+      <strong>Nation:</strong> ${nation || "Unknown"}
+    </p>
+  `;
+}
+
+// ------------------------------------------------------
+// Attach click listener
+// ------------------------------------------------------
+if (runBtn) {
+  runBtn.addEventListener("click", runAssessment);
+}
