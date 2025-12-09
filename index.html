@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Planning Permission Checker</title>
-  <link rel="stylesheet" href="styles.css" />
 
   <style>
     body {
@@ -53,27 +52,30 @@
       font-weight: 700;
       margin-bottom: 12px;
       color: white;
+      font-size: 15px;
     }
 
-    .pill.green { background: #2e7d32; }
-    .pill.amber { background: #f9a825; }
-    .pill.red   { background: #c62828; }
+    .green { background: #2e7d32; }
+    .amber { background: #f9a825; }
+    .red   { background: #c62828; }
 
     ul {
       padding-left: 20px;
     }
   </style>
-
 </head>
 
 <body>
 
+<!-- ======================================== -->
+<!-- INPUT CARD -->
+<!-- ======================================== -->
 <div class="card">
   <h1>Do I Need Planning Permission?</h1>
   <p>Answer a few quick questions to assess whether your proposal is likely permitted development.</p>
 
   <label for="postcode">Postcode</label>
-  <input type="text" id="postcode" placeholder="e.g. FK8 2ET" />
+  <input type="text" id="postcode" placeholder="e.g. PH7 4BL" />
 
   <label for="propertyType">Property Type</label>
   <select id="propertyType">
@@ -122,9 +124,12 @@
   </button>
 </div>
 
-<!-- RESULTS -->
+<!-- ======================================== -->
+<!-- RESULTS CARD -->
+<!-- ======================================== -->
 <div class="card result-section" id="resultsCard">
   <div id="decisionPill"></div>
+
   <h2 id="resultTitle"></h2>
   <p id="resultSummary"></p>
 
