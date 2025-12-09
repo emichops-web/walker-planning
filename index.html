@@ -2,93 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Instant Permitted Development Check</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Permitted Development Checker — Stirling</title>
   <link rel="stylesheet" href="style.css" />
-
 </head>
 
 <body>
+  <header class="top-header">
+    <h1>Permitted Development Checker</h1>
+    <p class="subtitle">Fast planning guidance aligned with Stirling Council practice</p>
+  </header>
 
-    <h1>Instant Permitted Development Check</h1>
-    <p class="subheading">Fast AI guidance based on UK planning rules</p>
+  <main class="container">
+    <section id="form-section">
+      <h2>Your Proposal</h2>
 
-    <div class="form-card">
-        <h2>Property Details</h2>
+      <form id="pd-form">
+        <!-- POSTCODE -->
+        <label for="postcode">Postcode *</label>
+        <input type="text" id="postcode" placeholder="e.g., FK8 2HG" required />
 
-        <label>Postcode *</label>
-        <input id="postcode" type="text" placeholder="e.g., PH7 4BL" />
-
-        <label>Property Type *</label>
-        <select id="propertyType">
-            <option value="">Select…</option>
-            <option>Detached</option>
-            <option>Semi-detached</option>
-            <option>Terraced</option>
-            <option>Flat</option>
+        <!-- PROPERTY TYPE -->
+        <label for="propertyType">Property Type *</label>
+        <select id="propertyType" required>
+          <option value="">Select...</option>
+          <option>Detached</option>
+          <option>Semi-detached</option>
+          <option>Terraced</option>
+          <option>Flat</option>
         </select>
 
-        <label>Project Type *</label>
-        <select id="projectType">
-            <option value="">Select…</option>
-            <option value="rear-extension">Rear extension</option>
-            <option value="side-extension">Side extension</option>
-            <option value="wrap-extension">Wrap-around extension</option>
-            <option value="front-porch">Porch / front extension</option>
-            <option value="loft">Loft conversion</option>
-            <option value="garage">Garage conversion</option>
-            <option value="two-storey">Two-storey extension</option>
-            <option value="garden-outbuilding">Garden room / outbuilding</option>
-            <option value="annexe">Annexe / ancillary building</option>
-            <option value="dormer">Dormer extension</option>
+        <!-- PROJECT TYPE -->
+        <label for="projectType">Project Type *</label>
+        <select id="projectType" required>
+          <option value="">Select...</option>
+          <option value="rear-extension">Rear Extension</option>
+          <option value="side-extension">Side Extension</option>
+          <option value="wrap-extension">Wrap-around Extension</option>
+          <option value="two-storey">Two-storey Extension</option>
+          <option value="front-porch">Front Porch</option>
+          <option value="dormer">Dormer / Roof Extension</option>
+          <option value="loft">Internal Loft Conversion</option>
+          <option value="garage">Garage Conversion</option>
+          <option value="garden-outbuilding">Garden Building</option>
+          <option value="annexe">Annexe</option>
         </select>
 
-        <!-- Dynamic dimension fields -->
-        <div id="dimension-fields"></div>
-
-       <label>Area Status *</label>
-<select id="areaStatus">
-    <option value="not_sure">I'm not sure</option>
-    <option value="none">None of these apply</option>
-    <option value="conservation">Conservation Area</option>
-    <option value="world_heritage">World Heritage Site</option>
-    <option value="national_park">National Park</option>
-    <option value="aonb">AONB</option>
-    <option value="broads">Broads Authority</option>
-</select>
-
-        <label>Property Status *</label>
-        <select id="propertyStatus">
-            <option value="unknown">I'm not sure</option>
-            <option value="none">None of these apply</option>
-            <option value="listed">Listed building</option>
-        </select>
-
-        <label>Project Description (Optional)</label>
+        <!-- OPTIONAL PROJECT DESCRIPTION -->
+        <label for="description">Project Description (optional)</label>
         <textarea id="description" placeholder="Describe your proposal..."></textarea>
 
-        <button id="runCheck">Run Feasibility Check</button>
-    </div>
+        <!-- AREA STATUS -->
+        <label for="areaStatus">Is your property in a special area?</label>
+        <select id="areaStatus">
+          <option value="not_sure">Not sure</option>
+          <option value="none">No</option>
+          <option value="conservation">Conservation Area</option>
+          <option value="national_park">National Park</option>
+          <option value="aonb">Area of Outstanding Natural Beauty</option>
+        </select>
 
-    <div id="result-card" class="result-card hidden">
-    <h2>Your Planning Feasibility Result</h2>
+        <!-- DIMENSIONS (AUTO DYNAMIC) -->
+        <div id="dimension-fields"></div>
 
-    <div id="result-content">
-        <div id="result-banner" class="result-banner"></div>
+        <!-- BUTTON -->
+        <button type="submit" id="check-button">Check</button>
+      </form>
+    </section>
 
-        <h3>Summary</h3>
-        <p id="summary-text"></p>
+    <!-- RESULTS -->
+    <section id="result-section" style="display:none;">
+      <h2>Assessment Result</h2>
+      <div id="decision-banner"></div>
+      <p id="decision-label"></p>
+      <p id="professionalAssessment" class="pro-text"></p>
 
-        <h3>Positive Factors</h3>
-        <ul id="positive-list"></ul>
+      <h3>Summary</h3>
+      <p id="summary"></p>
 
-        <h3>Key Risks</h3>
-        <ul id="risk-list"></ul>
+      <h3>Positive Factors</h3>
+      <ul id="positive-list"></ul>
 
-        <h3>Professional Assessment</h3>
-        <p id="assessment-text"></p>
-    </div>
-    </div>
+      <h3>Key Risks</h3>
+      <ul id="risk-list"></ul>
 
-    <script src="script.js"></script>
+      <h3>Location</h3>
+      <p id="location"></p>
+
+      <button id="new-check">Check Another Proposal</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
