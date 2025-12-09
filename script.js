@@ -8,26 +8,45 @@ projectType.addEventListener("change", () => {
     const type = projectType.value;
     let html = "";
 
-    const needsDims = [
+    const needsAll = [
         "rear-extension",
         "side-extension",
         "wrap-extension",
         "two-storey",
-        "front-porch"
+        "front-porch",
+        "annexe"
     ];
 
-    if (needsDims.includes(type)) {
-    html = `
-        <label>Projection (m)</label>
-        <input id="projection" type="number" step="0.1" />
+    const needsHB = [
+        "dormer",
+        "loft",
+        "garden-outbuilding"
+    ];
 
-        <label>Height (m)</label>
-        <input id="height" type="number" step="0.1" />
+    if (needsAll.includes(type)) {
+        html = `
+            <label>Projection (m)</label>
+            <input id="projection" type="number" step="0.1" />
 
-        <label>Nearest boundary distance (m)</label>
-        <input id="boundary" type="number" step="0.1" />
-    `;
-}
+            <label>Height (m)</label>
+            <input id="height" type="number" step="0.1" />
+
+            <label>Nearest boundary distance (m)</label>
+            <input id="boundary" type="number" step="0.1" />
+        `;
+    }
+    else if (needsHB.includes(type)) {
+        html = `
+            <label>Height (m)</label>
+            <input id="height" type="number" step="0.1" />
+
+            <label>Nearest boundary distance (m)</label>
+            <input id="boundary" type="number" step="0.1" />
+        `;
+    }
+    else {
+        html = ""; 
+    }
 
     dimensionFields.innerHTML = html;
 });
@@ -36,6 +55,7 @@ projectType.addEventListener("change", () => {
 // Submit request to Worker
 // -----------------------------
 document.getElementById("runCheck").addEventListener("click", async () => {
+
     const payload = {
         postcode: document.getElementById("postcode").value.trim(),
         propertyType: document.getElementById("propertyType").value,
@@ -46,18 +66,17 @@ document.getElementById("runCheck").addEventListener("click", async () => {
         dimensions: {}
     };
 
-   // Collect dimensions if inputs exist
-const projEl = document.getElementById("projection");
-const heightEl = document.getElementById("height");
-const boundaryEl = document.getElementById("boundary");
+    const projEl = document.getElementById("projection");
+    const heightEl = document.getElementById("height");
+    const boundaryEl = document.getElementById("boundary");
 
-payload.dimensions = {
-    projection: projEl ? parseFloat(projEl.value) || 0 : 0,
-    height: heightEl ? parseFloat(heightEl.value) || 0 : 0,
-    boundary: boundaryEl ? parseFloat(boundaryEl.value) || 0 : 0
-};
+    payload.dimensions = {
+        projection: projEl ? parseFloat(projEl.value) || 0 : 0,
+        height: heightEl ? parseFloat(heightEl.value) || 0 : 0,
+        boundary: boundaryEl ? parseFloat(boundaryEl.value) || 0 : 0
+    };
 
-    const res = await fetch("https://walker-planning-worker.emichops.workers.dev", {
+    const res = await fetch("https://walker-planning-worker-dev.emichops.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -68,29 +87,22 @@ payload.dimensions = {
     const box = document.getElementById("result-card");
     const content = document.getElementById("result-content");
 
-    let verdictClass = 
-        data.score >= 65 ? "verdict-good" :
-        data.score >= 40 ? "verdict-warning" : "verdict-bad";
-
     content.innerHTML = `
-        <div class="verdict-pill ${verdictClass}">${data.verdict}</div>
-
-        <p><strong>Estimated likelihood:</strong> ${data.score}%</p>
+        <div id="result-banner" class="result-banner ${data.decision}">
+            ${data.decision_label}
+        </div>
 
         <h3>Summary</h3>
-        <p>${data.assessment}</p>
+        <p>${data.summary}</p>
 
         <h3>Positive Factors</h3>
-        <ul>${data.positives.map(x => `<li>${x}</li>`).join("")}</ul>
+        <ul>${data.positive.map(x => `<li>${x}</li>`).join("")}</ul>
 
         <h3>Key Risks</h3>
         <ul>${data.risks.map(x => `<li>${x}</li>`).join("")}</ul>
 
         <h3>Professional Assessment</h3>
-        <p>${data.professional}</p>
-
-        <h3>Recommendation</h3>
-        <p>${data.recommendation}</p>
+        <p>${data.assessment}</p>
 
         <h3>Location</h3>
         <p><strong>Town:</strong> ${data.town || "Unknown"}</p>
@@ -99,5 +111,5 @@ payload.dimensions = {
     `;
 
     box.classList.remove("hidden");
-    box.scrollIntoView({behavior:"smooth"});
+    box.scrollIntoView({ behavior: "smooth" });
 });

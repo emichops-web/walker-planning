@@ -1,28 +1,23 @@
 name: PD Tool Automated Tests
 
 on:
-  workflow_dispatch:      # Allows manual "Run workflow"
+  workflow_dispatch:
   push:
-    branches: [ main ]    # Automatically run tests when changes are pushed
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install dependencies
         run: npm install
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run PD QA Suite
-        run: npx playwright test
+      - name: Run API Regression Tests
+        run: npx playwright test --workers=1
