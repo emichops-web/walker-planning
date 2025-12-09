@@ -1,140 +1,159 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const projectTypeSelect = document.getElementById("projectType");
+
+  const projectType = document.getElementById("projectType");
   const dimensionFields = document.getElementById("dimension-fields");
-  const form = document.getElementById("pd-form");
-  const resultBox = document.getElementById("result");
+  const runCheckBtn = document.getElementById("runCheck");
 
-  // -----------------------------------------
-  // DIMENSIONS: Show/hide depending on project
-  // -----------------------------------------
-  const projectNeedsDims = {
-    "rear-extension": true,
-    "side-extension": true,
-    "wrap-extension": true,
-    "two-storey": true,
-    "front-porch": true,
-    "garden-outbuilding": true,
-    "dormer": true,
-    "loft": false,
-    "garage": false,
-    "annexe": true
-  };
+  // ------------------------------------------------------
+  // 1. Dynamic dimension fields by project type
+  // ------------------------------------------------------
+  function renderDimensionFields(type) {
+    let html = "";
 
-  projectTypeSelect.addEventListener("change", () => {
-    const type = projectTypeSelect.value;
-    dimensionFields.style.display = projectNeedsDims[type] ? "block" : "none";
-  });
+    const needsDims = [
+      "rear-extension",
+      "side-extension",
+      "wrap-extension",
+      "two-storey"
+    ];
 
-  // ----------------------------------------------------
-  // SUBMIT FORM → CALL WORKER API AND BUILD RESULT PANEL
-  // ----------------------------------------------------
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+    const needsOutbuildingDims = ["garden-outbuilding"];
 
-    resultBox.innerHTML = "<p>Checking…</p>";
+    if (needsDims.includes(type)) {
+      html = `
+        <label>Projection (m)</label>
+        <input id="projection" type="number" min="0" step="0.1">
 
-    const payload = {
-      postcode: document.getElementById("postcode").value.trim(),
-      propertyType: document.getElementById("propertyType").value,
-      projectType: document.getElementById("projectType").value,
-      areaStatus: document.getElementById("areaStatus").value,
-      propertyStatus: document.getElementById("propertyStatus").value,
-      description: document.getElementById("description").value.trim(),
-      dimensions: {}
-    };
+        <label>Height (m)</label>
+        <input id="height" type="number" min="0" step="0.1">
 
-    // only include dims when visible
-    if (dimensionFields.style.display !== "none") {
-      payload.dimensions = {
-        projection: parseFloat(document.getElementById("projection").value) || 0,
-        height: parseFloat(document.getElementById("height").value) || 0,
-        boundary: parseFloat(document.getElementById("boundary").value) || 0
-      };
+        <label>Nearest boundary distance (m)</label>
+        <input id="boundary" type="number" min="0" step="0.1">
+      `;
     }
 
+    if (needsOutbuildingDims.includes(type)) {
+      html = `
+        <label>Height (m)</label>
+        <input id="height" type="number" min="0" step="0.1">
+
+        <label>Nearest boundary distance (m)</label>
+        <input id="boundary" type="number" min="0" step="0.1">
+      `;
+    }
+
+    dimensionFields.innerHTML = html;
+  }
+
+  // initial call
+  renderDimensionFields(projectType.value);
+
+  projectType.addEventListener("change", () => {
+    renderDimensionFields(projectType.value);
+  });
+
+  // ------------------------------------------------------
+  // 2. Submit handler — calls Worker API
+  // ------------------------------------------------------
+  runCheckBtn.addEventListener("click", async () => {
+    const postcode = document.getElementById("postcode").value.trim();
+    const propertyType = document.getElementById("propertyType").value;
+    const project = document.getElementById("projectType").value;
+    const areaStatus = document.getElementById("areaStatus").value;
+    const propertyStatus = document.getElementById("propertyStatus").value;
+    const description = document.getElementById("description").value;
+
+    // collect dims if they exist
+    const projection = document.getElementById("projection")?.value || null;
+    const height = document.getElementById("height")?.value || null;
+    const boundary = document.getElementById("boundary")?.value || null;
+
+    const payload = {
+      postcode,
+      propertyType,
+      projectType: project,
+      areaStatus,
+      propertyStatus,
+      description,
+      dimensions: {
+        projection: projection ? parseFloat(projection) : null,
+        height: height ? parseFloat(height) : null,
+        boundary: boundary ? parseFloat(boundary) : null
+      }
+    };
+
+    let endpoint =
+      window.location.hostname.includes("localhost") ||
+      window.location.hostname.includes("pages.dev")
+        ? "https://walker-planning-worker-dev.emichops-web.workers.dev"
+        : "https://api.walkerplanning.co.uk/api";
+
     try {
-      const res = await fetch("https://api.walkerplanning.co.uk/api", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
 
-      const result = await res.json();
+      const json = await res.json();
+      renderResult(json);
 
-      console.log("Worker response:", result);
-
-      // ----------------------------------------------------
-      // DECISION BANNER
-      // ----------------------------------------------------
-      const banner =
-        result.decision === "green"
-          ? `<div class="green-banner">${result.decision_label}</div>`
-          : result.decision === "amber"
-          ? `<div class="amber-banner">${result.decision_label}</div>`
-          : `<div class="red-banner">${result.decision_label}</div>`;
-
-      // ----------------------------------------------------
-      // POSITIVES & RISKS
-      // (Worker returns: positive: [], risks: [])
-      // ----------------------------------------------------
-      const positivesHtml =
-        result.positive && result.positive.length
-          ? "<ul>" + result.positive.map((p) => `<li>${p}</li>`).join("") + "</ul>"
-          : "<p>No specific positive factors identified.</p>";
-
-      const risksHtml =
-        result.risks && result.risks.length
-          ? "<ul>" + result.risks.map((r) => `<li>${r}</li>`).join("") + "</ul>"
-          : "<p>No specific risks identified.</p>";
-
-      // ----------------------------------------------------
-      // LOCATION
-      // Worker returns: town, authority, nation
-      // ----------------------------------------------------
-      const town = result.town || "Unknown";
-      const authority = result.authority || "Unknown";
-      const nation = result.nation || "Unknown";
-
-      // ----------------------------------------------------
-      // PROFESSIONAL ASSESSMENT
-      // Basic version (Option B)
-      // ----------------------------------------------------
-      let professionalAssessment = "";
-
-      if (result.decision === "green") {
-        professionalAssessment = "This proposal appears likely to fall under permitted development, subject to confirmation.";
-      } else if (result.decision === "amber") {
-        professionalAssessment = "A planning officer should review this proposal or further details may be required.";
-      } else {
-        professionalAssessment = "Planning permission is likely to be required for this proposal.";
-      }
-
-      // ----------------------------------------------------
-      // BUILD RESULT HTML
-      // ----------------------------------------------------
-      resultBox.innerHTML = `
-        ${banner}
-
-        <h3>Summary</h3>
-        <p>${result.summary || "No summary provided."}</p>
-
-        <h3>Positive Factors</h3>
-        ${positivesHtml}
-
-        <h3>Key Risks</h3>
-        ${risksHtml}
-
-        <h3>Professional Assessment</h3>
-        <p>${professionalAssessment}</p>
-
-        <h3>Location</h3>
-        <p><strong>Town:</strong> ${town}</p>
-        <p><strong>Authority:</strong> ${authority}</p>
-        <p><strong>Nation:</strong> ${nation}</p>
-      `;
     } catch (err) {
+      alert("Error contacting the assessment service.");
       console.error(err);
-      resultBox.innerHTML = `<p style="color:red;">An error occurred while processing your request.</p>`;
     }
   });
+
+  // ------------------------------------------------------
+  // 3. Render result card
+  // ------------------------------------------------------
+  function renderResult(data) {
+    const card = document.getElementById("result-card");
+    const banner = document.getElementById("result-banner");
+    const summaryText = document.getElementById("summary-text");
+    const riskList = document.getElementById("risk-list");
+    const posList = document.getElementById("positive-list");
+    const assessmentText = document.getElementById("assessment-text");
+
+    // banner colour + label
+    banner.className = "result-banner";
+    banner.classList.add(
+      data.decision === "green"
+        ? "green"
+        : data.decision === "amber"
+        ? "amber"
+        : "red"
+    );
+    banner.textContent = data.decision_label;
+
+    // summary
+    summaryText.textContent = data.summary || "";
+
+    // positive
+    posList.innerHTML = "";
+    (data.positive || []).forEach((p) => {
+      let li = document.createElement("li");
+      li.textContent = p;
+      posList.appendChild(li);
+    });
+
+    // risks
+    riskList.innerHTML = "";
+    (data.risks || []).forEach((r) => {
+      let li = document.createElement("li");
+      li.textContent = r;
+      riskList.appendChild(li);
+    });
+
+    // professional assessment
+    assessmentText.textContent =
+      data.professionalAssessment ||
+      (data.decision === "green"
+        ? "Your proposal appears to fall within permitted development rules."
+        : data.decision === "amber"
+        ? "A planning officer should review the details to confirm compliance."
+        : "Planning permission is likely to be required for this proposal.");
+
+    card.classList.remove("hidden");
+  }
 });
