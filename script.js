@@ -5,6 +5,7 @@ const workerURL = "https://walker-planning-worker-dev.emichops.workers.dev/";
 // For production: 
 // const workerURL = "https://walker-planning-worker.emichops.workers.dev/";
 
+
 document.addEventListener("DOMContentLoaded", () => {
   const projectType = document.getElementById("projectType");
   const dimFields = document.getElementById("dimension-fields");
