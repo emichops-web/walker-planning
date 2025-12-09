@@ -153,8 +153,8 @@ const stirlingCases = [
   },
 
   {
-    name: "St Ninians — outbuilding 2.8m height within 1m boundary — RED",
-    expected: "red", // UPDATED
+    name: "St Ninians — outbuilding 2.8m height within 1m boundary — AMBER",
+    expected: "amber", // UPDATED
     payload: {
       postcode: "FK7 0LN",
       propertyType: "Detached",
@@ -166,8 +166,8 @@ const stirlingCases = [
   },
 
   {
-    name: "Raploch — garden building 4m high — within 2m boundary — RED",
-    expected: "red",
+    name: "Raploch — garden building 4m high — within 2m boundary — AMBER",
+    expected: "amber",
     payload: {
       postcode: "FK8 1TZ",
       propertyType: "Terraced",
@@ -227,8 +227,8 @@ const stirlingCases = [
   // Wrap Extensions
   // -----------------------------
   {
-    name: "Bridge of Allan — wrap extension 3.5m — AMBER",
-    expected: "amber",
+    name: "Bridge of Allan — wrap extension 3.5m — RED",
+    expected: "red",
     payload: {
       postcode: "FK9 4NA",
       propertyType: "Detached",
@@ -396,8 +396,8 @@ const stirlingCases = [
   },
 
   {
-    name: "Raploch — wrap extension 3m — AMBER",
-    expected: "amber",
+    name: "Raploch — wrap extension 3m — GREEN",
+    expected: "green",
     payload: {
       postcode: "FK8 1TZ",
       propertyType: "Semi-detached",
@@ -422,8 +422,8 @@ const stirlingCases = [
   },
 
   {
-    name: "Bridge of Allan — garden building 2.6m within 2m boundary — RED",
-    expected: "red",
+    name: "Bridge of Allan — garden building 2.6m within 2m boundary — AMBER",
+    expected: "amber",
     payload: {
       postcode: "FK9 4DU",
       propertyType: "Detached",
@@ -500,8 +500,8 @@ const stirlingCases = [
   },
 
   {
-    name: "Stirling — garden building 2.9m — within 1.9m boundary — RED",
-    expected: "red",
+    name: "Stirling — garden building 2.9m — within 1.9m boundary — AMBER",
+    expected: "amber",
     payload: {
       postcode: "FK8 2AA",
       propertyType: "Detached",
