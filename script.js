@@ -75,7 +75,7 @@ function readablePropertyType(p) {
 
     const payload = {
       postcode,
-      propertyType: readablePropertyType(d.propertyType || "");
+      propertyType: readablePropertyType(propertyType),
       projectType: readableProjectTypeForWorker(projectType),
       areaStatus,
       listedStatus: listed,
