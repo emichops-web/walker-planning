@@ -27,28 +27,34 @@ function readablePropertyType(p) {
 
 
   function renderDimensions() {
-    const type = projectTypeSelect.value;
-    const needsDims = {
-      "rear-extension": true,
-      "side-extension": true,
-      "wrap-extension": true,
-      "two-storey": true,
-      "garden-outbuilding": true
-    };
+  const type = projectTypeSelect.value;
 
-    dimFields.innerHTML = needsDims[type]
-      ? `
-        <label>Projection (metres)</label>
-        <input type="number" id="projection" min="0" step="0.1">
+  // Which project types require dimensions?
+  const needsDims = {
+    "rear-extension": true,
+    "side-extension": true,
+    "wrap-extension": true,
+    "two-storey": true,
+    "garden-outbuilding": true
+  };
 
-        <label>Height (metres)</label>
-        <input type="number" id="height" min="0" step="0.1">
+  // Always wipe the container fully
+  dimFields.innerHTML = "";
 
-        <label>Distance to boundary (metres)</label>
-        <input type="number" id="boundary" min="0" step="0.1">
-        `
-      : "";
-  }
+  if (!needsDims[type]) return;
+
+  // Insert clean, guaranteed-fresh inputs
+  dimFields.innerHTML = `
+    <label>Projection (metres)</label>
+    <input type="number" id="projection" min="0" step="0.1" value="">
+
+    <label>Height (metres)</label>
+    <input type="number" id="height" min="0" step="0.1" value="">
+
+    <label>Distance to boundary (metres)</label>
+    <input type="number" id="boundary" min="0" step="0.1" value="">
+  `;
+}
 
   async function runCheck() {
     const postcode = document.getElementById("postcode").value.trim();
@@ -66,10 +72,14 @@ function readablePropertyType(p) {
 
     let dimensions = {};
     if (document.getElementById("projection")) {
+      const p = document.getElementById("projection").value;
+      const h = document.getElementById("height").value;
+      const b = document.getElementById("boundary").value;
+
       dimensions = {
-        projection: Number(document.getElementById("projection").value),
-        height: Number(document.getElementById("height").value),
-        boundary: Number(document.getElementById("boundary").value)
+        projection: p === "" ? null : Number(p),
+        height: h === "" ? null : Number(h),
+        boundary: b === "" ? null : Number(b)
       };
     }
 
