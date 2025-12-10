@@ -9,8 +9,22 @@ document.addEventListener("DOMContentLoaded", () => {
   checkBtn.addEventListener("click", runCheck);
 
   function readableProjectType(raw) {
-    return raw.replace(/-/g, " ");
-  }
+  return raw.replace(/-/g, " ");
+}
+
+function readableProjectTypeForWorker(raw) {
+  return raw.replace(/-/g, "_");
+}
+
+function readablePropertyType(p) {
+  if (!p) return "";
+  const lower = p.toLowerCase();
+  if (lower === "detached") return "detached house";
+  if (lower === "semi-detached") return "semi-detached house";
+  if (lower === "terraced") return "terraced house";
+  return lower;
+}
+
 
   function renderDimensions() {
     const type = projectTypeSelect.value;
