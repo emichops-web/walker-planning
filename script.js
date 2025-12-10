@@ -75,8 +75,8 @@ function readablePropertyType(p) {
 
     const payload = {
       postcode,
-      propertyType,
-      projectType,
+      propertyType: readablePropertyType(propertyType),
+      projectType: readableProjectTypeForWorker(projectType),
       areaStatus,
       listedStatus: listed,
       dimensions
@@ -107,7 +107,16 @@ function readablePropertyType(p) {
 
     // Narrative mapping
     const n = d.narrative || {};
-    document.getElementById("overview").innerHTML = n.intro || "";
+  // --- Fix property type wording inside narrative text ---
+if (n.intro) {
+  const cleanProp = readablePropertyType(d.propertyType || "");
+  n.intro = n.intro.replace(
+    /your (detached|semi[- ]?detached|terraced)/i,
+    `your ${cleanProp}`
+  );
+}
+
+document.getElementById("overview").innerHTML = n.intro || "";
     document.getElementById("proposal").innerHTML = n.project_summary || "";
     document.getElementById("pdContext").innerHTML = n.pd_context || "";
     document.getElementById("conclusion").innerHTML = n.conclusion || "";
