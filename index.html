@@ -7,94 +7,97 @@
 
   <style>
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: #f7f7f7;
       margin: 0;
       padding: 0;
-      line-height: 1.55;
-      color: #222;
     }
 
     .container {
-      max-width: 900px;
+      max-width: 800px;
       margin: 0 auto;
-      padding: 32px 20px;
+      padding: 24px;
     }
 
     h1 {
-      margin-bottom: 12px;
       font-size: 28px;
+      margin-bottom: 6px;
     }
 
-    .card {
+    .section-card {
       background: white;
       padding: 24px;
-      border-radius: 8px;
-      margin-bottom: 32px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     }
 
     label {
       font-weight: 600;
-      margin-top: 16px;
       display: block;
+      margin-top: 16px;
+      margin-bottom: 6px;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 10px;
-      margin-top: 6px;
       border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 15px;
     }
 
-    button {
-      margin-top: 24px;
-      width: 100%;
-      padding: 14px;
-      background: #0a2342;
+    .button {
+      background: #0d2a52;
       color: white;
-      font-size: 16px;
-      border: none;
+      padding: 14px;
       border-radius: 6px;
+      font-size: 17px;
+      text-align: center;
+      margin-top: 20px;
       cursor: pointer;
-      font-weight: 600;
+      border: none;
+      width: 100%;
     }
-    button:hover { background: #0d2d57; }
 
     .pill {
       display: inline-block;
       padding: 8px 16px;
-      font-size: 15px;
-      font-weight: 700;
       border-radius: 20px;
-      margin-bottom: 20px;
-      color: white;
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 15px;
     }
 
-    .green { background: #4c8c45; }
-    .amber { background: #d29b2b; }
-    .red { background: #b63a33; }
+    .green { background: #4caf50; color: white; }
+    .amber { background: #ffc107; color: black; }
+    .red { background: #d9534f; color: white; }
 
-    .section-title {
-      margin-top: 28px;
+    .narrative-block p {
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+
+    .narrative-title {
       font-size: 20px;
       font-weight: 700;
+      margin-top: 24px;
     }
 
-    ul { margin: 8px 0 0 20px; }
+    ul { margin-top: 0; }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="card">
+
+    <!-- INPUT FORM -->
+    <div class="section-card">
       <h1>Do I Need Planning Permission?</h1>
       <p>Answer a few quick questions to assess whether your proposal is likely permitted development.</p>
 
       <label>Postcode</label>
-      <input id="postcode" placeholder="e.g. PH7 4BL" />
+      <input type="text" id="postcode" placeholder="e.g., PH7 4BL" />
 
       <label>Property Type</label>
       <select id="propertyType">
@@ -112,12 +115,12 @@
         <option value="side-extension">Side extension</option>
         <option value="wrap-extension">Wrap extension</option>
         <option value="two-storey">Two-storey extension</option>
-        <option value="dormer">Dormer</option>
-        <option value="loft">Loft conversion</option>
-        <option value="front-porch">Front porch</option>
-        <option value="garage">Garage conversion</option>
         <option value="garden-outbuilding">Garden outbuilding</option>
+        <option value="garage">Garage conversion</option>
+        <option value="loft">Loft conversion</option>
+        <option value="dormer">Dormer extension</option>
         <option value="annexe">Annexe</option>
+        <option value="front-porch">Porch</option>
       </select>
 
       <div id="dimension-fields"></div>
@@ -127,7 +130,7 @@
         <option value="none">No</option>
         <option value="conservation">Conservation area</option>
         <option value="national_park">National park</option>
-        <option value="aonb">Area of Outstanding Natural Beauty</option>
+        <option value="aonb">Area of outstanding natural beauty</option>
         <option value="not_sure">I'm not sure</option>
       </select>
 
@@ -137,22 +140,44 @@
         <option value="yes">Yes</option>
       </select>
 
-      <button id="checkBtn">Check</button>
+      <button class="button" id="checkBtn">Check</button>
     </div>
 
-    <!-- RESULTS CARD -->
-    <div id="resultsCard" class="card" style="display:none;">
+
+    <!-- RESULTS -->
+    <div id="resultsCard" class="section-card" style="display:none;">
+
       <div id="decisionPill"></div>
 
-      <h2 id="resultTitle">Result of Your Planning Assessment</h2>
+      <h2>Result of Your Planning Assessment</h2>
+
       <p id="resultSummary"></p>
 
-      <div id="introSection"></div>
-      <div id="proposalSection"></div>
-      <div id="pdContextSection"></div>
-      <div id="riskSection"></div>
-      <div id="recommendSection"></div>
-      <div id="conclusionSection"></div>
+      <h3>Professional Planning Assessment</h3>
+      <p id="professionalAssessment"></p>
+
+      <!-- Narrative Output -->
+      <div class="narrative-block">
+        <div class="narrative-title">Overview</div>
+        <p id="narrativeIntro"></p>
+
+        <div class="narrative-title">Your Proposal</div>
+        <p id="narrativeProject"></p>
+
+        <div class="narrative-title">Permitted Development Context</div>
+        <p id="narrativeContext"></p>
+
+        <div class="narrative-title">Key Risks</div>
+        <ul id="risksBlock"></ul>
+
+        <div class="narrative-title">Recommendations</div>
+        <p id="narrativePDPath"></p>
+        <p id="narrativePlanningPath"></p>
+
+        <div class="narrative-title">Conclusion</div>
+        <p id="narrativeConclusion"></p>
+      </div>
+
     </div>
   </div>
 
