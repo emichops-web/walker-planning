@@ -144,17 +144,13 @@ document.getElementById("overview").innerHTML = n.intro || "";
     // Recommendations list
     const recList = document.getElementById("recommendationsList");
     recList.innerHTML = "";
-    if (n.recommendations) {
-      if (n.recommendations.pd_path) {
+
+    if (Array.isArray(n.recommendations)) {
+      n.recommendations.forEach(rec => {
         const li = document.createElement("li");
-        li.textContent = n.recommendations.pd_path;
+        li.textContent = rec;
         recList.appendChild(li);
-      }
-      if (n.recommendations.planning_path) {
-        const li = document.createElement("li");
-        li.textContent = n.recommendations.planning_path;
-        recList.appendChild(li);
-      }
+      });
     }
 
     card.scrollIntoView({ behavior: "smooth" });
