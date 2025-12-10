@@ -1,20 +1,19 @@
 const workerURL = "https://walker-planning-worker-dev.emichops.workers.dev/";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const projectType = document.getElementById("projectType");
   const dimFields = document.getElementById("dimension-fields");
+  const projectTypeSelect = document.getElementById("projectType");
   const checkBtn = document.getElementById("checkBtn");
 
-  projectType.addEventListener("change", renderDimensions);
+  projectTypeSelect.addEventListener("change", renderDimensions);
   checkBtn.addEventListener("click", runCheck);
 
-  /* ===============================
-     DYNAMIC DIMENSIONS
-  =============================== */
-  function renderDimensions() {
-    const type = projectType.value;
-    let html = "";
+  function readableProjectType(raw) {
+    return raw.replace(/-/g, " ");
+  }
 
+  function renderDimensions() {
+    const type = projectTypeSelect.value;
     const needsDims = {
       "rear-extension": true,
       "side-extension": true,
@@ -23,8 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "garden-outbuilding": true
     };
 
-    if (needsDims[type]) {
-      html = `
+    dimFields.innerHTML = needsDims[type]
+      ? `
         <label>Projection (metres)</label>
         <input type="number" id="projection" min="0" step="0.1">
 
@@ -33,54 +32,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <label>Distance to boundary (metres)</label>
         <input type="number" id="boundary" min="0" step="0.1">
-      `;
-    }
-
-    dimFields.innerHTML = html;
+        `
+      : "";
   }
 
-  /* ===============================
-     RUN CHECK
-  =============================== */
   async function runCheck() {
     const postcode = document.getElementById("postcode").value.trim();
     const propertyType = document.getElementById("propertyType").value;
-    const projectTypeVal = document.getElementById("projectType").value;
+    const projectType = document.getElementById("projectType").value;
     const areaStatus = document.getElementById("areaStatus").value;
-    const listed = document.getElementById("listed").value === "yes";
+    const listed = document.getElementById("listed").value;
 
-    // Basic postcode validation
+    // Validate postcode
     const pcValid = /^[A-Za-z]{1,2}\d[A-Za-z\d]?\s*\d[A-Za-z]{2}$/;
     if (!pcValid.test(postcode)) {
       alert("Please enter a valid UK postcode.");
       return;
     }
 
-    if (!propertyType || !projectTypeVal) {
-      alert("Please complete all required fields.");
-      return;
-    }
-
     let dimensions = {};
     if (document.getElementById("projection")) {
-      const proj = Number(document.getElementById("projection").value);
-      const h = Number(document.getElementById("height").value);
-      const b = Number(document.getElementById("boundary").value);
-
-      if (!proj || !h || !b) {
-        alert("Please enter all dimension fields.");
-        return;
-      }
-
-      dimensions = { projection: proj, height: h, boundary: b };
+      dimensions = {
+        projection: Number(document.getElementById("projection").value),
+        height: Number(document.getElementById("height").value),
+        boundary: Number(document.getElementById("boundary").value)
+      };
     }
 
     const payload = {
       postcode,
       propertyType,
-      projectType: projectTypeVal,
+      projectType,
       areaStatus,
-      listedStatus: listed ? "yes" : "no",
+      listedStatus: listed,
       dimensions
     };
 
@@ -90,81 +74,55 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify(payload)
     });
 
-    const json = await res.json();
-    renderResults(json);
+    const data = await res.json();
+    renderResults(data);
   }
 
-  /* ===============================
-     RENDER RESULTS
-  =============================== */
-  function renderResults(data) {
-    const resultsCard = document.getElementById("resultsCard");
+  function renderResults(d) {
+    const card = document.getElementById("resultsCard");
+    card.classList.remove("hidden");
 
-    /* --- Decision pill --- */
-    const pill = document.getElementById("decisionPill");
-    pill.innerHTML = `<span class="pill ${data.decision}">${data.decision_label}</span>`;
+    document.getElementById("resultLocation").textContent = d.summary;
+    document.getElementById("professionalAssessment").textContent =
+      d.professionalAssessment;
 
-    /* --- Overview --- */
-    const overviewText = document.getElementById("resultSummary");
-    overviewText.textContent = data.summary || "";
+    // Decision pill under Professional Planning Assessment
+    document.getElementById("decisionPill").innerHTML = `
+      <span class="pill ${d.decision}">${d.decision_label}</span>
+    `;
 
-    /* --- Narrative blocks --- */
-    const narrative = data.narrative || {};
+    // Narrative mapping
+    const n = d.narrative || {};
+    document.getElementById("overview").innerHTML = n.intro || "";
+    document.getElementById("proposal").innerHTML = n.project_summary || "";
+    document.getElementById("pdContext").innerHTML = n.pd_context || "";
+    document.getElementById("conclusion").innerHTML = n.conclusion || "";
 
-    setBlock("narrativeIntro", narrative.intro);
-    setBlock("narrativeProject", narrative.project_summary);
-    setBlock("narrativeContext", narrative.pd_context);
+    // Risks list
+    const risksList = document.getElementById("risksList");
+    risksList.innerHTML = "";
+    (d.keyRisks || []).forEach(r => {
+      const li = document.createElement("li");
+      li.textContent = r;
+      risksList.appendChild(li);
+    });
 
-    /* --- Risks --- */
-    const riskBlock = document.getElementById("risksBlock");
-    if (data.keyRisks && data.keyRisks.length > 0) {
-      riskBlock.innerHTML = `
-        <h3>Key Risks</h3>
-        <ul>${data.keyRisks.map(r => `<li>${r}</li>`).join("")}</ul>
-      `;
-    } else {
-      riskBlock.innerHTML = "";
+    // Recommendations list
+    const recList = document.getElementById("recommendationsList");
+    recList.innerHTML = "";
+    if (n.recommendations) {
+      if (n.recommendations.pd_path) {
+        const li = document.createElement("li");
+        li.textContent = n.recommendations.pd_path;
+        recList.appendChild(li);
+      }
+      if (n.recommendations.planning_path) {
+        const li = document.createElement("li");
+        li.textContent = n.recommendations.planning_path;
+        recList.appendChild(li);
+      }
     }
 
-    /* --- Positives --- */
-    const posBlock = document.getElementById("positivesBlock");
-    if (data.positive && data.positive.length > 0) {
-      posBlock.innerHTML = `
-        <h3>Positive Findings</h3>
-        <ul>${data.positive.map(p => `<li>${p}</li>`).join("")}</ul>
-      `;
-    } else {
-      posBlock.innerHTML = "";
-    }
-
-    /* --- Recommendations --- */
-    const recBlock = document.getElementById("recommendations");
-    const recs = narrative.recommendations || {};
-
-    let recText = "";
-    if (recs.pd_path) recText += `<p>${recs.pd_path}</p>`;
-    if (recs.planning_path) recText += `<p>${recs.planning_path}</p>`;
-
-    recBlock.innerHTML = recText || "<p>No specific recommendations provided.</p>";
-
-    /* --- Conclusion --- */
-    setBlock("finalConclusion", narrative.conclusion);
-
-    /* --- Show + scroll --- */
-    resultsCard.style.display = "block";
-    resultsCard.scrollIntoView({ behavior: "smooth" });
-  }
-
-  /* ===============================
-     HELPERS
-  =============================== */
-  function setBlock(id, text) {
-    const el = document.getElementById(id);
-    if (text && text.trim()) {
-      el.parentElement.style.display = "block";
-      el.innerHTML = text;
-    } else {
-      el.parentElement.style.display = "none";
-    }
+    card.scrollIntoView({ behavior: "smooth" });
   }
 });

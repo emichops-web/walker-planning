@@ -1,164 +1,70 @@
-/* =========================
-   GLOBAL
-========================= */
-
 body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f5f6f7;
   margin: 0;
-  padding: 0;
-  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: #f5f7fa;
-  color: #222;
-  line-height: 1.6;
+  padding: 20px;
 }
 
 .container {
   max-width: 780px;
-  margin: 0 auto;
-  padding: 20px;
+  margin: auto;
 }
-
-h1, h2, h3 {
-  font-weight: 600;
-  margin-top: 0;
-}
-
-.subtitle {
-  margin-top: -10px;
-  color: #555;
-}
-
-/* =========================
-   CARD
-========================= */
 
 .card {
-  background: #fff;
+  background: white;
   padding: 24px;
-  margin-bottom: 24px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  border-radius: 12px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
 }
 
-/* =========================
-   FORM
-========================= */
+.hidden { display: none; }
+
+h1, h2, h3 {
+  margin-top: 0;
+  color: #222;
+}
 
 label {
-  display: block;
-  font-weight: 500;
-  margin: 14px 0 4px;
-}
-
-input[type="text"],
-input[type="number"],
-select {
-  width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 6px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 15px;
-  box-sizing: border-box;
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: #3483fa;
-  box-shadow: 0 0 0 2px rgba(52,131,250,0.15);
-}
-
-.primary-btn {
-  width: 100%;
-  padding: 12px;
+  font-weight: 600;
   margin-top: 12px;
-  font-size: 16px;
-  background: #0052cc;
+  display: block;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  background: #0c2d57;
   color: white;
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  border-radius: 8px;
+  font-size: 16px;
   font-weight: 600;
 }
 
-.primary-btn:hover {
-  background: #0041a8;
+button:hover {
+  background: #0a2445;
+  cursor: pointer;
 }
 
-/* =========================
-   RESULTS
-========================= */
-
-.summary-text {
-  margin-bottom: 20px;
-  font-size: 16px;
-  color: #444;
-}
-
-/* Pill design */
 .pill {
   display: inline-block;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 20px;
-  font-size: 15px;
+  color: white;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-/* Green / Amber / Red Pill */
-.pill.green {
-  background: #d9f2dc;
-  color: #207335;
-  border: 1px solid #b1e8b8;
-}
-
-.pill.amber {
-  background: #fff4d6;
-  color: #8a6300;
-  border: 1px solid #ffe2a4;
-}
-
-.pill.red {
-  background: #fde0e0;
-  color: #b60000;
-  border: 1px solid #f5b7b7;
-}
-
-/* =========================
-   NARRATIVE BLOCKS
-========================= */
-
-.narrative-block {
-  margin-bottom: 24px;
-  background: #fafafa;
-  padding: 14px 16px;
-  border-left: 4px solid #ddd;
-  border-radius: 4px;
-}
-
-.narrative-block strong {
-  font-weight: 600;
-}
-
-.narrative-block ul {
-  margin: 8px 0 0;
-  padding-left: 20px;
-}
-
-.narrative-block li {
-  margin-bottom: 6px;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 600px) {
-  .card {
-    padding: 18px;
-  }
-
-  .primary-btn {
-    font-size: 15px;
-  }
-}
+.pill.green { background: #4caf50; }
+.pill.amber { background: #dca314; }
+.pill.red { background: #c4473a; }
