@@ -130,6 +130,17 @@ document.getElementById("overview").innerHTML = n.intro || "";
       risksList.appendChild(li);
     });
 
+    // Reasons list (NEW)
+    const reasonsList = document.getElementById("reasonsList");
+    if (reasonsList) {
+      reasonsList.innerHTML = "";
+      (d.narrative?.reasons || []).forEach(reason => {
+        const li = document.createElement("li");
+        li.textContent = reason;
+        reasonsList.appendChild(li);
+      });
+    }
+
     // Recommendations list
     const recList = document.getElementById("recommendationsList");
     recList.innerHTML = "";
