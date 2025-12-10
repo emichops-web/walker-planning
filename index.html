@@ -10,84 +10,95 @@
 <body>
   <div class="container">
 
-    <h1>Do I Need Planning Permission?</h1>
-    <p>Answer a few quick questions to assess whether your proposal is likely permitted development.</p>
+    <header>
+      <h1>Do I Need Planning Permission?</h1>
+      <p class="subtitle">Fast, clear guidance based on your property and project details.</p>
+    </header>
 
-    <!-- FORM -->
-    <div class="card">
-      <label>Postcode</label>
-      <input id="postcode" type="text" placeholder="PH7 4BL" />
+    <!-- ==========================
+         INPUT FORM
+    =========================== -->
+    <section class="card">
+      <h2>Your Project Details</h2>
 
-      <label>Property Type</label>
+      <label for="postcode">Postcode *</label>
+      <input type="text" id="postcode" placeholder="e.g., FK15 0AB" />
+
+      <label for="propertyType">Property Type *</label>
       <select id="propertyType">
-        <option value="Detached">Detached</option>
-        <option value="Semi-detached">Semi-detached</option>
-        <option value="Terraced">Terraced</option>
-        <option value="Flat">Flat</option>
+        <option value="">Select...</option>
+        <option value="Detached">Detached house</option>
+        <option value="Semi-detached">Semi-detached house</option>
+        <option value="Terraced">Terraced house</option>
+        <option value="Flat">Flat / Maisonette</option>
       </select>
 
-      <label>Project Type</label>
+      <label for="projectType">Project Type *</label>
       <select id="projectType">
+        <option value="">Select...</option>
         <option value="rear-extension">Rear extension</option>
         <option value="side-extension">Side extension</option>
-        <option value="wrap-extension">Wrap extension</option>
+        <option value="wrap-extension">Wrap-around extension</option>
         <option value="two-storey">Two-storey extension</option>
-        <option value="dormer">Dormer</option>
         <option value="loft">Loft conversion</option>
+        <option value="dormer">Dormer extension</option>
         <option value="garage">Garage conversion</option>
-        <option value="garden-outbuilding">Garden building</option>
         <option value="front-porch">Porch</option>
+        <option value="garden-outbuilding">Garden building / Outbuilding</option>
         <option value="annexe">Annexe</option>
       </select>
 
+      <!-- Dynamic Dimension Fields -->
       <div id="dimension-fields"></div>
 
-      <label>Is your property in a special area?</label>
+      <label for="areaStatus">Is the property in a special area?</label>
       <select id="areaStatus">
-        <option value="none">No</option>
-        <option value="conservation">Conservation area</option>
+        <option value="not_sure">I'm not sure</option>
+        <option value="none">No — none of these</option>
+        <option value="conservation">Conservation Area</option>
         <option value="national_park">National Park</option>
-        <option value="aonb">AONB</option>
-        <option value="not_sure">Not sure</option>
+        <option value="aonb">Area of Outstanding Natural Beauty</option>
       </select>
 
-      <label>Is the property a listed building?</label>
+      <label for="listed">Is the building listed?</label>
       <select id="listed">
         <option value="no">No</option>
         <option value="yes">Yes</option>
       </select>
 
-      <button id="checkBtn">Check</button>
-    </div>
+      <button id="checkBtn" class="primary-btn">Check</button>
+    </section>
 
-    <!-- RESULTS -->
-    <div id="resultsCard" class="card hidden">
-      <h2>Result of Your Planning Assessment</h2>
-      <p id="resultLocation"></p>
+    <!-- ==========================
+         RESULTS
+    =========================== -->
+    <section id="resultsCard" class="card" style="display:none;">
+      <h2>Professional Planning Assessment</h2>
 
-      <h3>Professional Planning Assessment</h3>
-      <div id="decisionPill"></div>
+      <!-- Decision Pill -->
+      <div id="decisionPill" class="decision-pill"></div>
 
-      <p id="professionalAssessment"></p>
+      <!-- Result Summary -->
+      <p id="resultSummary" class="summary-text"></p>
 
-      <h3>Overview</h3>
-      <p id="overview"></p>
+      <!-- Narrative Sections -->
+      <div id="narrative-intro" class="narrative-block"></div>
+      <div id="narrative-project" class="narrative-block"></div>
+      <div id="narrative-context" class="narrative-block"></div>
 
-      <h3>Your Proposal</h3>
-      <p id="proposal"></p>
+      <!-- Positives -->
+      <div id="positivesBlock" class="narrative-block"></div>
 
-      <h3>Permitted Development Context</h3>
-      <p id="pdContext"></p>
+      <!-- Risks -->
+      <div id="risksBlock" class="narrative-block"></div>
 
-      <h3>Key Risks</h3>
-      <ul id="risksList"></ul>
+      <!-- Recommendations -->
+      <div id="recommendations" class="narrative-block"></div>
 
-      <h3>Recommendations</h3>
-      <ul id="recommendationsList"></ul>
+      <!-- Conclusion -->
+      <div id="narrative-conclusion" class="narrative-block"></div>
 
-      <h3>Conclusion</h3>
-      <p id="conclusion"></p>
-    </div>
+    </section>
 
   </div>
 
