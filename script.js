@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   projectTypeSelect.addEventListener("change", renderDimensions);
   checkBtn.addEventListener("click", runCheck);
 
+  renderDimensions();   // ★ FIX: Show correct fields immediately
+
   function readableProjectType(raw) {
   return raw.replace(/-/g, " ");
 }
