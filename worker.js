@@ -1,8 +1,11 @@
-// worker.js
-import { evaluate } from "./logic/core/evaluate.js";
-import { generateNarrative } from "./logic/core/narrative.js";
+// worker.js (Phase 2 – final version)
 
+import { evaluate } from "./logic/core/evaluate.js";
+import { generateNarrative } from "./logic/narrative/narrative.js";
+
+// ----------------------------------------------------
 // Utility responses
+// ----------------------------------------------------
 function json(obj) {
   return new Response(JSON.stringify(obj), {
     headers: {
@@ -22,13 +25,16 @@ function jsonError(msg, code = 400) {
   });
 }
 
+// ----------------------------------------------------
+// Worker entry point
+// ----------------------------------------------------
 export default {
   async fetch(request, env) {
     const isAutomatedTest =
       request.headers.get("x-test-mode") === "true" ||
       request.headers.get("User-Agent")?.includes("Playwright");
 
-    // Handle CORS preflight
+    // CORS preflight
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -56,15 +62,11 @@ export default {
       const postcode = data.postcode.toUpperCase().trim();
 
       // --------------------------------------------
-      // TOWN + AUTHORITY LOOKUP
+      // AUTHORITY + TOWN LOOKUP
       // --------------------------------------------
       let authority = "Unknown";
       let town = "your area";
-      let autoFlags = {
-        conservation: false,
-        nationalPark: false,
-        aonb: false,
-      };
+      let autoFlags = { conservation: false, nationalPark: false, aonb: false };
 
       function extractTown(r) {
         if (!r) return null;
@@ -98,9 +100,12 @@ export default {
             const text = JSON.stringify(j.result).toLowerCase();
             if (text.includes("conservation")) autoFlags.conservation = true;
             if (text.includes("aonb")) autoFlags.aonb = true;
+
+            // (National Parks rarely appear in postcode lookup)
           }
         } catch (_) {}
       } else {
+        // Automated tests need determinism
         authority = "Stirling";
         town = "Test Town";
       }
@@ -109,7 +114,6 @@ export default {
       // DETERMINE FINAL DESIGNATION
       // --------------------------------------------
       const userArea = data.areaStatus || "not_sure";
-
       const validDesignations = [
         "conservation",
         "national_park",
@@ -129,7 +133,7 @@ export default {
       }
 
       // --------------------------------------------
-      // RUN UNIFIED LOGIC ENGINE
+      // RUN UNIFIED LOGIC ENGINE (Phase 2)
       // --------------------------------------------
       const result = evaluate({
         postcode: data.postcode,
@@ -142,7 +146,7 @@ export default {
       });
 
       // --------------------------------------------
-      // DECISION PRESENTATION
+      // DECISION LABELS
       // --------------------------------------------
       const decision_label =
         result.decision === "green"
@@ -160,8 +164,19 @@ export default {
 
       const summary = `Assessment generated for ${town}, within ${authority}.`;
 
-      const narrative = generateNarrative(result, data, town, authority);
+      // --------------------------------------------
+      // FULL PHASE-2 NARRATIVE
+      // --------------------------------------------
+      const narrative = generateNarrative({
+        result,
+        inputs: data,
+        town,
+        authority,
+      });
 
+      // --------------------------------------------
+      // FINAL RESPONSE
+      // --------------------------------------------
       return json({
         decision: result.decision,
         decision_label,
