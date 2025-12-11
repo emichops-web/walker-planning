@@ -1,20 +1,19 @@
-/**
- * loader.js
- * ------------------------------
- * Loads the correct regional logic module (Scotland / England/Wales)
- * based on postcode → nation.
- */
+// logic/regions/loader.js
+import { applyEnglandWalesRules } from "./england-wales.js";
+import { applyScotlandRules } from "./scotland.js";
 
-import { determineNation } from "./core/helpers.js";
-import * as scotland from "./regions/scotland.js";
-import * as englandWales from "./regions/england-wales.js";
+// Returns a function that applies region-specific rules
+export function loadRegionRules(nation) {
+  if (!nation) throw new Error("Nation is required");
 
-export function evaluateRequest(data) {
-  const nation = determineNation(data.postcode);
+  nation = nation.toLowerCase();
 
-  if (nation === "Scotland") {
-    return scotland.evaluateScottishPD(data);
-  } else {
-    return englandWales.evaluateEnglandWalesPD(data);
+  if (nation.includes("england") || nation.includes("wales")) {
+    return applyEnglandWalesRules;
   }
+  if (nation.includes("scotland")) {
+    return applyScotlandRules;
+  }
+
+  throw new Error(`Unsupported nation: ${nation}`);
 }

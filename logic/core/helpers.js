@@ -1,28 +1,41 @@
-/**
- * helpers.js
- * ------------------------------
- * Shared utility functions.
- */
+// logic/core/helpers.js
 
-export function normaliseProjectType(t) {
-  return (t || "")
-    .toLowerCase()
-    .trim()
+// -----------------------------------------------------
+// Text Normalisation
+// -----------------------------------------------------
+export function normaliseText(str) {
+  if (!str) return "";
+  return String(str).trim().toLowerCase();
+}
+
+// Convert project types: "rear_extension" → "rear-extension"
+export function normaliseProjectType(str) {
+  if (!str) return "";
+  return normaliseText(str)
     .replace(/_/g, "-")
     .replace(/\s+/g, "-");
 }
 
-export function normalisePropertyType(raw) {
-  const r = (raw || "").toLowerCase().trim();
-  if (r.includes("flat")) return "flat";
-  if (r.includes("terrace")) return "terraced";
-  if (r.includes("semi")) return "semi-detached";
-  if (r.includes("detached")) return "detached";
+// Convert property types: "Detached house" → "detached"
+export function normalisePropertyType(str) {
+  if (!str) return "other";
+  const raw = normaliseText(str);
+
+  if (raw.includes("detached") && !raw.includes("semi")) return "detached";
+  if (raw.includes("semi")) return "semi-detached";
+  if (raw.includes("terrace")) return "terraced";
+  if (raw.includes("flat")) return "flat";
+
   return "other";
 }
 
-export function determineNation(postcode) {
-  const pc = (postcode || "").toUpperCase().replace(/\s+/g, "");
-  const scot = ["AB","DD","DG","EH","FK","G","HS","IV","KA","KW","KY","ML","PA","PH","TD","ZE"];
-  return scot.some(p => pc.startsWith(p)) ? "Scotland" : "England/Wales";
+// Convert dimension values into safe numbers
+export function toNumber(v, fallback = 0) {
+  const n = Number(v);
+  return isNaN(n) ? fallback : n;
+}
+
+// Simple clamping utility
+export function clamp(num, min, max) {
+  return Math.max(min, Math.min(max, num));
 }
