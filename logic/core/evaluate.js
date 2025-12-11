@@ -1,22 +1,9 @@
-// -----------------------------------------------------------------------------
-// evaluate.js
-//
-// Phase 1: Core evaluation engine
-// This file:
-//   • Normalises raw inputs (property type, project type, dimensions)
-//   • Determines the nation
-//   • Calls the correct region rule engine (Scotland for now)
-//   • Returns a clean, standardised PD evaluation result
-//
-// Later (Phase 2–3):
-//   • Narrative generation moves to narrative.js
-//   • Stirling-specific overrides live in regions/stirling.js
-// -----------------------------------------------------------------------------
-
-import { evaluateScotland } from "./regions/scotland.js";
+// logic/core/evaluate.js
+import { evaluateScotland } from "../regions/scotland.js";
+import { evaluateEnglandWales } from "../regions/england-wales.js";
 
 // -------------------------------------------------
-// Normalisation helpers (matches current worker.js)
+// Normalisation helpers
 // -------------------------------------------------
 function normaliseProjectType(type) {
   if (!type) return "unknown";
@@ -35,32 +22,20 @@ function normalisePropertyType(raw) {
   return "other";
 }
 
-// -------------------------------------------------
-// Determine which nation rules apply
-// (Same logic used in your worker)
-// -------------------------------------------------
-function determineNation(postcode) {
-  if (!postcode) return "England/Wales";
+function determineNation(pc) {
+  if (!pc) return "England/Wales";
+  const formatted = pc.replace(/\s+/g, "").toUpperCase();
 
-  const formatted = postcode.replace(/\s+/g, "").toUpperCase();
-  const scotList = [
-    "AB", "DD", "DG", "EH", "FK", "G", "HS", "IV",
-    "KA", "KW", "KY", "ML", "PA", "PH", "TD", "ZE",
-  ];
-
-  return scotList.some(prefix => formatted.startsWith(prefix))
+  const scotList = ["AB","DD","DG","EH","FK","G","HS","IV","KA","KW","KY","ML","PA","PH","TD","ZE"];
+  return scotList.some(p => formatted.startsWith(p))
     ? "Scotland"
     : "England/Wales";
 }
 
-// -----------------------------------------------------------------------------
-// MAIN EXPORT
-// -----------------------------------------------------------------------------
-
+// -------------------------------------------------
+// MAIN EVALUATION
+// -------------------------------------------------
 export function evaluate(inputs) {
-  // -------------------------------------------------
-  // 1. Extract + normalise input fields
-  // -------------------------------------------------
   const nation = determineNation(inputs.postcode);
   const type = normaliseProjectType(inputs.projectType);
   const prop = normalisePropertyType(inputs.propertyType);
@@ -73,9 +48,6 @@ export function evaluate(inputs) {
   const userArea = inputs.areaStatus || "not_sure";
   const finalDesignation = inputs.finalDesignation || "none";
 
-  // -------------------------------------------------
-  // 2. Apply regional rule engine
-  // -------------------------------------------------
   let result;
 
   if (nation === "Scotland") {
@@ -90,18 +62,18 @@ export function evaluate(inputs) {
       finalDesignation,
     });
   } else {
-    // England/Wales placeholder (Phase 3+)
-    result = {
-      decision: "amber",
-      score: 55,
-      risks: ["England/Wales rules not yet implemented in new engine."],
-      positive: [],
-    };
+    result = evaluateEnglandWales({
+      type,
+      prop,
+      proj,
+      height,
+      boundary,
+      listed,
+      userArea,
+      finalDesignation,
+    });
   }
 
-  // -------------------------------------------------
-  // 3. Return standardised evaluation object
-  // -------------------------------------------------
   return {
     nation,
     type,
@@ -112,6 +84,6 @@ export function evaluate(inputs) {
     listed,
     userArea,
     finalDesignation,
-    ...result, // { decision, score, risks, positive }
+    ...result,
   };
 }

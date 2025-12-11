@@ -1,10 +1,6 @@
-// -----------------------------------------------------------------------------
-// Scotland PD Rule Engine
-// -----------------------------------------------------------------------------
-// This reproduces the *exact logic* from your current worker.js so that
-// UI and API behaviour remain perfectly in sync.
-// -----------------------------------------------------------------------------
+// logic/regions/scotland.js
 
+// CORE SCOTLAND RULE ENGINE
 export function evaluateScotland({
   type,
   prop,
@@ -15,23 +11,15 @@ export function evaluateScotland({
   listed,
   userArea,
 }) {
-  // --------------------------------------------
-  // BASE SCORE
-  // --------------------------------------------
-  let score = 68;                // Scotland default baseline
+  let score = 68;
   let risks = [];
   let positive = [];
 
-  // --------------------------------------------
-  // PROPERTY SCORE ADJUSTMENTS
-  // --------------------------------------------
+  // --- PROPERTY ADJUSTMENTS ---
   if (prop === "detached") score += 8;
   else if (prop === "semi-detached") score += 4;
   else if (prop === "terraced") score -= 10;
 
-  // --------------------------------------------
-  // EXTENSION TYPES (PD-relevant)
-  // --------------------------------------------
   const extensionTypes = [
     "rear-extension",
     "side-extension",
@@ -42,38 +30,25 @@ export function evaluateScotland({
     "garden-outbuilding",
   ];
 
-  // --------------------------------------------
-  // LISTED BUILDING → always planning
-  // --------------------------------------------
+  // LISTED BUILDING
   if (listed === "yes") {
     score = 15;
-    risks.push(
-      "Listed buildings require planning permission for almost all external works."
-    );
+    risks.push("Listed buildings require planning permission.");
   }
 
-  // --------------------------------------------
-  // FLATS never have PD rights for extensions/outbuildings
-  // --------------------------------------------
+  // FLATS
   if (prop === "flat" && extensionTypes.includes(type)) {
     score = 15;
-    risks.push("Flats do not have permitted development rights for extensions or outbuildings.");
+    risks.push("Flats do not have PD rights for extensions.");
   }
 
-  // --------------------------------------------
-  // DESIGNATION IMPACT
-  // --------------------------------------------
+  // DESIGNATION EFFECT
   if (finalDesignation !== "none") {
     score -= 35;
-    risks.push("The site lies in a designated area with restricted permitted development rights.");
+    risks.push("Designated area with restricted PD rights.");
   }
 
-  // -------------------------------------------------------------------------
-  // SPECIAL AREA EXTENSION BAN (found by reverse-engineering your worker)
-  //
-  // If Scotland + designated + property is a house + project is rear/side/wrap
-  // THEN forced RED.
-  // -------------------------------------------------------------------------
+  // SPECIAL AREA EXTENSION BAN
   if (
     finalDesignation !== "none" &&
     ["rear-extension", "side-extension", "wrap-extension"].includes(type) &&
@@ -83,9 +58,7 @@ export function evaluateScotland({
     risks.push("Extensions in designated areas normally require planning permission.");
   }
 
-  // --------------------------------------------
-  // CONSERVATION AREA OVERRIDES
-  // --------------------------------------------
+  // CONSERVATION AREA
   const consRestricted = [
     "rear-extension",
     "side-extension",
@@ -101,64 +74,50 @@ export function evaluateScotland({
     score = 15;
   }
 
-  // --------------------------------------------
-  // NATIONAL PARK OVERRIDES
-  // --------------------------------------------
+  // NATIONAL PARK
   if (finalDesignation === "national_park") {
-    if (type === "rear-extension") score = 15;
-    if (type === "dormer") score = 15;
-    if (type === "loft") score = 15;
+    if (["rear-extension","dormer","loft"].includes(type)) {
+      score = 15;
+    }
   }
 
-  // --------------------------------------------
-  // HEIGHT / PROJECTION RULES
-  // --------------------------------------------
+  // HEIGHT / PROJECTION
   if (proj > 8 || height > 6) {
     score = 15;
-    risks.push("Project exceeds typical permitted development thresholds.");
+    risks.push("Project exceeds permitted development thresholds.");
   }
 
   if (type === "rear-extension" && proj > 3) {
     score = 15;
-    risks.push("Rear extensions over 3m are not permitted development in Scotland.");
   }
 
   if (type === "side-extension" && proj > 3) {
     score = 15;
-    risks.push("Side extensions over 3m are not permitted development in Scotland.");
   }
 
   if (type === "wrap-extension" && proj > 3) {
     score = 15;
-    risks.push("Wrap extensions over 3m require planning permission.");
   }
 
-  // --------------------------------------------
   // BOUNDARY RULE
-  // --------------------------------------------
-  if (type !== "garage" && boundary < 2) {
+  if (boundary < 2 && type !== "garage") {
     score -= 20;
-    risks.push("Distance to boundary is under 2m, increasing planning sensitivity.");
+    risks.push("Boundary is under 2m.");
   }
 
-  // --------------------------------------------
-  // AMBER CAP (Scotland only, UX decision)
-  // --------------------------------------------
+  // AMBER CAP
   if (userArea === "not_sure" && score >= 40) {
     score = Math.min(score, 55);
   }
 
-  // --------------------------------------------
-  // SCORE → DECISION
-  // --------------------------------------------
   let decision = "amber";
   if (score >= 70) decision = "green";
   if (score < 40) decision = "red";
 
-  return {
-    decision,
-    score,
-    risks,
-    positive,
-  };
+  return { decision, score, risks, positive };
+}
+
+// EXPORT WRAPPER FOR LOADER.JS
+export function applyScotlandRules(inputs) {
+  return evaluateScotland(inputs);
 }

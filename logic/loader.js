@@ -1,8 +1,7 @@
-// logic/regions/loader.js
-import { applyEnglandWalesRules } from "./england-wales.js";
-import { applyScotlandRules } from "./scotland.js";
+// logic/loader.js
+import { applyEnglandWalesRules } from "./regions/england-wales.js";
+import { applyScotlandRules } from "./regions/scotland.js";
 
-// Returns a function that applies region-specific rules
 export function loadRegionRules(nation) {
   if (!nation) throw new Error("Nation is required");
 

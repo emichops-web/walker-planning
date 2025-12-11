@@ -1,6 +1,6 @@
+// worker.js
 import { evaluate } from "./logic/core/evaluate.js";
-import { loadRegionRules } from "./logic/regions/loader.js";
- 
+
 // Utility responses
 function json(obj) {
   return new Response(JSON.stringify(obj), {
@@ -67,7 +67,6 @@ export default {
 
       function extractTown(r) {
         if (!r) return null;
-
         if (r.post_town) return r.post_town;
 
         if (r.lsoa && /^[A-Za-z]+/.test(r.lsoa)) {
@@ -81,7 +80,6 @@ export default {
         }
 
         if (r.parish && r.parish.length < 20) return r.parish;
-
         if (r.admin_ward && r.admin_ward.length < 20) return r.admin_ward;
 
         return null;
@@ -107,7 +105,7 @@ export default {
       }
 
       // --------------------------------------------
-      // DETERMINE FINAL DESIGNATION (UI + AUTO FLAGS)
+      // DETERMINE FINAL DESIGNATION
       // --------------------------------------------
       const userArea = data.areaStatus || "not_sure";
 
@@ -162,7 +160,7 @@ export default {
       const summary = `Assessment generated for ${town}, within ${authority}.`;
 
       // --------------------------------------------
-      // NARRATIVE (simple for now — improved in Phase 2)
+      // SIMPLE NARRATIVE (expanded in Phase 2)
       // --------------------------------------------
       const narrative = {
         intro: `Assessment for your property in ${town}, within ${authority}.`,
@@ -183,9 +181,6 @@ export default {
             : "This proposal exceeds PD limits and will likely need permission.",
       };
 
-      // --------------------------------------------
-      // FINAL RESPONSE
-      // --------------------------------------------
       return json({
         decision: result.decision,
         decision_label,
