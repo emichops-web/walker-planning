@@ -1,5 +1,6 @@
 // worker.js
 import { evaluate } from "./logic/core/evaluate.js";
+import { generateNarrative } from "./logic/core/narrative.js";
 
 // Utility responses
 function json(obj) {
@@ -159,27 +160,7 @@ export default {
 
       const summary = `Assessment generated for ${town}, within ${authority}.`;
 
-      // --------------------------------------------
-      // SIMPLE NARRATIVE (expanded in Phase 2)
-      // --------------------------------------------
-      const narrative = {
-        intro: `Assessment for your property in ${town}, within ${authority}.`,
-        project_summary: `Project type: ${data.projectType}.`,
-        pd_context: "",
-        reasons: result.risks,
-        recommendations:
-          result.decision === "green"
-            ? ["You may proceed under permitted development."]
-            : result.decision === "amber"
-            ? ["Further review is recommended."]
-            : ["Planning permission is likely required."],
-        conclusion:
-          result.decision === "green"
-            ? "This proposal appears suitable for permitted development."
-            : result.decision === "amber"
-            ? "This proposal is borderline and should be reviewed."
-            : "This proposal exceeds PD limits and will likely need permission.",
-      };
+      const narrative = generateNarrative(result, data, town, authority);
 
       return json({
         decision: result.decision,
