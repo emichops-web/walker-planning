@@ -1,115 +1,170 @@
-// -----------------------------
-// Dynamic dimension rendering
-// -----------------------------
-const projectType = document.getElementById("projectType");
-const dimensionFields = document.getElementById("dimension-fields");
+const workerURL = "https://walker-planning-worker-dev.emichops.workers.dev/";
 
-projectType.addEventListener("change", () => {
-    const type = projectType.value;
-    let html = "";
+document.addEventListener("DOMContentLoaded", () => {
+  const dimFields = document.getElementById("dimension-fields");
+  const projectTypeSelect = document.getElementById("projectType");
+  const checkBtn = document.getElementById("checkBtn");
 
-    const needsAll = [
-        "rear-extension",
-        "side-extension",
-        "wrap-extension",
-        "two-storey",
-        "front-porch",
-        "annexe"
-    ];
+  projectTypeSelect.addEventListener("change", renderDimensions);
+  checkBtn.addEventListener("click", runCheck);
 
-    const needsHB = [
-        "dormer",
-        "loft",
-        "garden-outbuilding"
-    ];
+  renderDimensions();   // ★ FIX: Show correct fields immediately
 
-    if (needsAll.includes(type)) {
-        html = `
-            <label>Projection (m)</label>
-            <input id="projection" type="number" step="0.1" />
+  function readableProjectType(raw) {
+  return raw.replace(/-/g, " ");
+}
 
-            <label>Height (m)</label>
-            <input id="height" type="number" step="0.1" />
+function readableProjectTypeForWorker(raw) {
+  return raw.replace(/-/g, "_");
+}
 
-            <label>Nearest boundary distance (m)</label>
-            <input id="boundary" type="number" step="0.1" />
-        `;
+function readablePropertyType(p) {
+  if (!p) return "";
+  const lower = p.toLowerCase();
+  if (lower === "detached") return "detached house";
+  if (lower === "semi-detached") return "semi-detached house";
+  if (lower === "terraced") return "terraced house";
+  return lower;
+}
+
+
+  function renderDimensions() {
+  const type = projectTypeSelect.value;
+
+  // Which project types require dimensions?
+  const needsDims = {
+    "rear-extension": true,
+    "side-extension": true,
+    "wrap-extension": true,
+    "two-storey": true,
+    "garden-outbuilding": true
+  };
+
+  // Always wipe the container fully
+  dimFields.innerHTML = "";
+
+  if (!needsDims[type]) return;
+
+  // Insert clean, guaranteed-fresh inputs
+  dimFields.innerHTML = `
+    <label>Projection (metres)</label>
+    <input type="number" id="projection" min="0" step="0.1" value="">
+
+    <label>Height (metres)</label>
+    <input type="number" id="height" min="0" step="0.1" value="">
+
+    <label>Distance to boundary (metres)</label>
+    <input type="number" id="boundary" min="0" step="0.1" value="">
+  `;
+}
+
+  async function runCheck() {
+    const postcode = document.getElementById("postcode").value.trim();
+    const propertyType = document.getElementById("propertyType").value;
+    const projectType = document.getElementById("projectType").value;
+    const areaStatus = document.getElementById("areaStatus").value;
+    const listed = document.getElementById("listed").value;
+
+    // Validate postcode
+    const pcValid = /^[A-Za-z]{1,2}\d[A-Za-z\d]?\s*\d[A-Za-z]{2}$/;
+    if (!pcValid.test(postcode)) {
+      alert("Please enter a valid UK postcode.");
+      return;
     }
-    else if (needsHB.includes(type)) {
-        html = `
-            <label>Height (m)</label>
-            <input id="height" type="number" step="0.1" />
 
-            <label>Nearest boundary distance (m)</label>
-            <input id="boundary" type="number" step="0.1" />
-        `;
+    let dimensions = {};
+    if (document.getElementById("projection")) {
+      const p = document.getElementById("projection").value;
+      const h = document.getElementById("height").value;
+      const b = document.getElementById("boundary").value;
+
+      dimensions = {
+        projection: p === "" ? null : Number(p),
+        height: h === "" ? null : Number(h),
+        boundary: b === "" ? null : Number(b)
+      };
     }
-    else {
-        html = ""; 
-    }
-
-    dimensionFields.innerHTML = html;
-});
-
-// -----------------------------
-// Submit request to Worker
-// -----------------------------
-document.getElementById("runCheck").addEventListener("click", async () => {
 
     const payload = {
-        postcode: document.getElementById("postcode").value.trim(),
-        propertyType: document.getElementById("propertyType").value,
-        projectType: projectType.value,
-        areaStatus: document.getElementById("areaStatus").value,
-        propertyStatus: document.getElementById("propertyStatus").value,
-        description: document.getElementById("description").value.trim(),
-        dimensions: {}
+      postcode,
+      propertyType: readablePropertyType(propertyType),
+      projectType: readableProjectTypeForWorker(projectType),
+      areaStatus,
+      listedStatus: listed,
+      dimensions
     };
 
-    const projEl = document.getElementById("projection");
-    const heightEl = document.getElementById("height");
-    const boundaryEl = document.getElementById("boundary");
-
-    payload.dimensions = {
-        projection: projEl ? parseFloat(projEl.value) || 0 : 0,
-        height: heightEl ? parseFloat(heightEl.value) || 0 : 0,
-        boundary: boundaryEl ? parseFloat(boundaryEl.value) || 0 : 0
-    };
-
-    const res = await fetch("https://walker-planning-worker-dev.emichops.workers.dev", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+    const res = await fetch(workerURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
     });
 
     const data = await res.json();
+    renderResults(data);
+  }
 
-    const box = document.getElementById("result-card");
-    const content = document.getElementById("result-content");
+  function renderResults(d) {
+    const card = document.getElementById("resultsCard");
+    card.classList.remove("hidden");
 
-    content.innerHTML = `
-        <div id="result-banner" class="result-banner ${data.decision}">
-            ${data.decision_label}
-        </div>
+    document.getElementById("resultLocation").textContent = d.summary;
+    document.getElementById("professionalAssessment").textContent =
+      d.professionalAssessment;
 
-        <h3>Summary</h3>
-        <p>${data.summary}</p>
-
-        <h3>Positive Factors</h3>
-        <ul>${data.positive.map(x => `<li>${x}</li>`).join("")}</ul>
-
-        <h3>Key Risks</h3>
-        <ul>${data.risks.map(x => `<li>${x}</li>`).join("")}</ul>
-
-        <h3>Professional Assessment</h3>
-        <p>${data.assessment}</p>
-
-        <h3>Location</h3>
-        <p><strong>Town:</strong> ${data.town || "Unknown"}</p>
-        <p><strong>Authority:</strong> ${data.authority}</p>
-        <p><strong>Nation:</strong> ${data.nation}</p>
+    // Decision pill under Professional Planning Assessment
+    document.getElementById("decisionPill").innerHTML = `
+      <span class="pill ${d.decision}">${d.decision_label}</span>
     `;
 
-    box.classList.remove("hidden");
-    box.scrollIntoView({ behavior: "smooth" });
+    // Narrative mapping
+    const n = d.narrative || {};
+  // --- Fix property type wording inside narrative text ---
+if (n.intro) {
+  const cleanProp = readablePropertyType(d.propertyType || "");
+  n.intro = n.intro.replace(
+    /your (detached|semi[- ]?detached|terraced)/i,
+    `your ${cleanProp}`
+  );
+}
+
+document.getElementById("overview").innerHTML = n.intro || "";
+    document.getElementById("proposal").innerHTML = n.project_summary || "";
+    document.getElementById("pdContext").innerHTML = n.pd_context || "";
+    document.getElementById("conclusion").innerHTML = n.conclusion || "";
+
+    // Risks list
+    const risksList = document.getElementById("risksList");
+    risksList.innerHTML = "";
+    (d.keyRisks || []).forEach(r => {
+      const li = document.createElement("li");
+      li.textContent = r;
+      risksList.appendChild(li);
+    });
+
+    // Reasons list (NEW)
+    const reasonsList = document.getElementById("reasonsList");
+    if (reasonsList) {
+      reasonsList.innerHTML = "";
+      (d.narrative?.reasons || []).forEach(reason => {
+        const li = document.createElement("li");
+        li.textContent = reason;
+        reasonsList.appendChild(li);
+      });
+    }
+
+    // Recommendations list
+    const recList = document.getElementById("recommendationsList");
+    recList.innerHTML = "";
+
+    if (Array.isArray(n.recommendations)) {
+      n.recommendations.forEach(rec => {
+        const li = document.createElement("li");
+        li.textContent = rec;
+        recList.appendChild(li);
+      });
+    }
+
+    card.scrollIntoView({ behavior: "smooth" });
+  }
 });
