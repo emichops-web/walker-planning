@@ -46,7 +46,34 @@ export default {
       let town = "your area";
       let autoFlags = { conservation: false, aonb: false, nationalPark: false };
 
-      // Same postcode.io logic here ...
+      try {
+  const res = await fetch(`https://api.postcodes.io/postcodes/${postcode}`);
+  const j = await res.json();
+
+  if (j.status === 200 && j.result) {
+    authority = j.result.admin_district || "Unknown";
+
+    // Extract town from multiple fallback fields
+    const r = j.result;
+    if (r.post_town) town = r.post_town;
+    else if (r.lsoa && /^[A-Za-z]+/.test(r.lsoa))
+      town = r.lsoa.split(/[\s-]+/)[0];
+    else if (r.msoa && /^[A-Za-z]+/.test(r.msoa))
+      town = r.msoa.split(/[\s-]+/)[0];
+    else if (r.parish && r.parish.length < 20) 
+      town = r.parish;
+    else if (r.admin_ward && r.admin_ward.length < 20) 
+      town = r.admin_ward;
+
+    // Detect special areas from text
+    const text = JSON.stringify(j.result).toLowerCase();
+    if (text.includes("conservation")) autoFlags.conservation = true;
+    if (text.includes("aonb")) autoFlags.aonb = true;
+    if (text.includes("national park")) autoFlags.nationalPark = true;
+  }
+} catch (err) {
+  console.log("Postcode lookup failed", err);
+}
 
       // --- Final Designation (unchanged) ---
       const userArea = data.areaStatus || "not_sure";
