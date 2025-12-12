@@ -1,5 +1,6 @@
 // worker.js
 import { evaluate } from "./logic/core/evaluate.js";
+import { generateNarrative } from "./logic/narrative/narrative.js";
 
 function json(obj) {
   return new Response(JSON.stringify(obj), {
@@ -70,25 +71,13 @@ export default {
         finalDesignation
       });
 
-      // --- Narrative (Phase 3) -- placeholder ---
-      const narrative = {
-        intro: `Assessment for your property in ${town}, within ${authority}.`,
-        project_summary: `Project: ${data.projectType}`,
-        pd_context: "",
-        reasons: result.risks,
-        recommendations:
-          result.decision === "green"
-            ? ["Proceed under PD."]
-            : result.decision === "amber"
-            ? ["Further review recommended."]
-            : ["Planning permission likely required."],
-        conclusion:
-          result.decision === "green"
-            ? "Suitable for PD."
-            : result.decision === "amber"
-            ? "Borderline."
-            : "Likely requires permission."
-      };
+      // --- Narrative (Phase 3 actual generator) ---
+      const narrative = generateNarrative({
+        result,
+        inputs: data,
+        town,
+        authority
+      });
 
       return json({
         decision: result.decision,
@@ -107,10 +96,6 @@ export default {
       });
 
     } catch (err) {
-      return jsonError("Internal server error: " + err.message, 500);
-    }
-  },
-};
       return jsonError("Internal server error: " + err.message, 500);
     }
   },
