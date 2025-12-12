@@ -1,3 +1,38 @@
+// ---------------------------------------------------------
+// RISK REWRITING ENGINE (turns rule-engine risks into planner language)
+// ---------------------------------------------------------
+
+function rewriteRisk(risk, decision) {
+  const r = risk.toLowerCase();
+
+  // --- GREEN ---
+  if (decision === "green") {
+    return null; // Greens should show the single default line only
+  }
+
+  // --- AMBER (borderline) ---
+  if (decision === "amber") {
+    if (r.includes("boundary")) return "The proposal sits close to boundary-related thresholds where interpretation may vary.";
+    if (r.includes("3m") || r.includes("projection")) return "Some dimensions are close to the permitted development limits for extensions.";
+    if (r.includes("designation")) return "Site characteristics may influence whether PD rights apply.";
+    if (r.includes("height")) return "The proposed height approaches the upper limits permitted under PD rights.";
+
+    // Default fallback
+    return "Some elements of the proposal sit close to thresholds that may affect PD compliance.";
+  }
+
+  // --- RED (fails PD) ---
+  if (decision === "red") {
+    if (r.includes("boundary")) return "The boundary distance is below the minimum typically required for permitted development.";
+    if (r.includes("3m") || r.includes("projection")) return "The proposed projection exceeds permitted development limits in Scotland.";
+    if (r.includes("designation")) return "Extensions in this type of designated area normally require planning permission.";
+    if (r.includes("height")) return "The proposed height exceeds permitted development criteria.";
+
+    // Default fallback
+    return "Based on the supplied details, one or more permitted development limits have been exceeded.";
+  }
+}
+
 export function generateNarrative({ result, inputs, town, authority }) {
   const { decision, risks, positive } = result;
 
@@ -37,6 +72,19 @@ export function generateNarrative({ result, inputs, town, authority }) {
       "The details supplied indicate that the proposal exceeds one or more permitted development thresholds. " +
       "Planning permission is therefore likely to be required.";
   }
+
+// KEY RISKS (from rule-engine → rewritten planner language)
+let keyRisks = [];
+
+if (decision === "green") {
+  keyRisks = [
+    "No key risks were identified that would affect permitted development status."
+  ];
+} else {
+  keyRisks = risks
+    .map(r => rewriteRisk(r, decision))
+    .filter(Boolean); // drop nulls
+}
 
   // REASONS
   const reasons = risks.length
@@ -83,5 +131,6 @@ export function generateNarrative({ result, inputs, town, authority }) {
     reasons,
     recommendations,
     conclusion,
+    keyRisks
   };
 }
