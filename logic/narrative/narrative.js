@@ -12,26 +12,38 @@ function rewriteRisk(risk, decision) {
 
   // --- AMBER (borderline) ---
   if (decision === "amber") {
-    if (r.includes("boundary")) return "The proposal sits close to boundary-related thresholds where interpretation may vary.";
-    if (r.includes("3m") || r.includes("projection")) return "Some dimensions are close to the permitted development limits for extensions.";
-    if (r.includes("designation")) return "Site characteristics may influence whether PD rights apply.";
-    if (r.includes("height")) return "The proposed height approaches the upper limits permitted under PD rights.";
+    if (r.includes("boundary"))
+      return "The proposal sits close to boundary-related thresholds where interpretation may vary.";
+    if (r.includes("3m") || r.includes("projection"))
+      return "Some dimensions are close to the permitted development limits for extensions.";
+    if (r.includes("designation"))
+      return "Site characteristics may influence whether permitted development rights apply.";
+    if (r.includes("height"))
+      return "The proposed height approaches the upper limits permitted under PD rights.";
 
     // Default fallback
-    return "Some elements of the proposal sit close to thresholds that may affect PD compliance.";
+    return "Some elements of the proposal sit close to thresholds that may affect permitted development compliance.";
   }
 
   // --- RED (fails PD) ---
   if (decision === "red") {
-    if (r.includes("boundary")) return "The boundary distance is below the minimum typically required for permitted development.";
-    if (r.includes("3m") || r.includes("projection")) return "The proposed projection exceeds permitted development limits in Scotland.";
-    if (r.includes("designation")) return "Extensions in this type of designated area normally require planning permission.";
-    if (r.includes("height")) return "The proposed height exceeds permitted development criteria.";
+    if (r.includes("boundary"))
+      return "The boundary distance is below the standard expected for permitted development.";
+    if (r.includes("3m") || r.includes("projection"))
+      return "The proposed projection exceeds the limits typically allowed under permitted development.";
+    if (r.includes("designation"))
+      return "Extensions in designated areas generally require planning permission.";
+    if (r.includes("height"))
+      return "The proposed height exceeds permitted development thresholds.";
 
-    // Default fallback
-    return "Based on the supplied details, one or more permitted development limits have been exceeded.";
+    // Improved fallback (unique)
+    return "One or more permitted development limits have been exceeded based on the submitted details.";
   }
 }
+
+// ---------------------------------------------------------
+// NARRATIVE GENERATOR
+// ---------------------------------------------------------
 
 export function generateNarrative({ result, inputs, town, authority }) {
   const { decision, risks, positive } = result;
@@ -47,7 +59,7 @@ export function generateNarrative({ result, inputs, town, authority }) {
   // OVERVIEW
   const intro =
     `You requested guidance on whether proposed works to your property in ${town}, within ${authority}, may fall under permitted development. ` +
-    `This assessment reflects the relevant legislation and how such proposals are typically interpreted by planning authorities in Scotland.`;
+    `This assessment reflects the relevant legislation, and how such proposals are typically interpreted by planning authorities in Scotland.`;
 
   // PROJECT SUMMARY
   const project_summary =
@@ -73,20 +85,24 @@ export function generateNarrative({ result, inputs, town, authority }) {
       "Planning permission is therefore likely to be required.";
   }
 
-// KEY RISKS (from rule-engine → rewritten planner language)
-let keyRisks = [];
+  // KEY RISKS (use rewritten planner language)
+  let keyRisks = [];
 
-if (decision === "green") {
-  keyRisks = [
-    "No key risks were identified that would affect permitted development status."
-  ];
-} else {
-  keyRisks = risks
-    .map(r => rewriteRisk(r, decision))
-    .filter(Boolean); // drop nulls
-}
+  if (decision === "green") {
+    keyRisks = [
+      "No key risks were identified that would affect permitted development status."
+    ];
+  } else {
+    keyRisks = Array.from(
+      new Set(
+        risks
+          .map(r => rewriteRisk(r, decision))
+          .filter(Boolean)
+      )
+    );
+  }
 
-  // REASONS
+  // REASONS (raw rule-engine reasons)
   const reasons = risks.length
     ? risks.map(r => r)
     : ["No conflicts were identified with the core tests that determine whether a proposal may fall within permitted development."];
@@ -128,9 +144,9 @@ if (decision === "green") {
     intro,
     project_summary,
     pd_context,
+    keyRisks,
     reasons,
     recommendations,
-    conclusion,
-    keyRisks
+    conclusion
   };
 }
